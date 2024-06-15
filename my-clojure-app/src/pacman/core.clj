@@ -8,7 +8,7 @@
            (javax.imageio ImageIO)
            (java.io File)))
 
-(def pacman-size 100)
+(def pacman-size 50)
 (def open-mouth 270)
 (def closed-mouth 360)
 (def angle (atom closed-mouth))
