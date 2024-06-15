@@ -8,7 +8,7 @@
            (javax.imageio ImageIO)
            (java.io File)))
 
-(def pacman-size 100)
+(def pacman-size 50)
 (def open-mouth 270)
 (def closed-mouth 360)
 (def angle (atom closed-mouth))
@@ -80,11 +80,11 @@
     frame))
 
 (defn load-images []
-  (reset! images {:closed (load-image "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/imgs/pacman-closed.png")
-                  :up-open (load-image "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/imgs/pacman-up-open.png")
-                  :down-open (load-image "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/imgs/pacman-down-open.png")
-                  :left-open (load-image "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/imgs/pacman-left-open.png")
-                  :right-open (load-image "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/imgs/pacman-right-open.png")})
+  (reset! images {:closed (load-image "resources/imgs/pacman-closed.png")
+                  :up-open (load-image "resources/imgs/pacman-up-open.png")
+                  :down-open (load-image "resources/imgs/pacman-down-open.png")
+                  :left-open (load-image "resources/imgs/pacman-left-open.png")
+                  :right-open (load-image "resources/imgs/pacman-right-open.png")})
   (println "Images loaded:" @images)
   (doseq [[key image] @images]
     (if image
