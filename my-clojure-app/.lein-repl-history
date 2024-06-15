@@ -1,0 +1,71 @@
+(+ 1 1)
+(distinct [:a :b :a :c :a :d])
+(dotimes [i 3]
+(println (rand-nth ["Fabulous!" "Marvelous!" "Inconceivable!"])
+ i))
+(dotimes [i 3] (println (rand-nth ["Fabulous!" "Marvelous!" "Inconceivable!"]) i))
+clear
+cls
+clean
+(-main)
+(require 'my-proj.core :reload)
+(require 'my-clojure-app.core :reload)
+(-main)
+(-greet)
+(greet)
+exit
+greet
+(greet)
+(-main)
+exit
+(-main)
+exit
+(require my-clojure-app.core)
+(require 'my-clojure-app.core)
+(my-clojure-app.core/greet "Programmer")
+exit
+(require 'my-clojure-app.core)
+(my-clojure-app.core/greet "Programmer")
+(my-clojure-app.core/greet nil)
+exit
+(require 'my-clojure-app.core)
+(my-clojure-app.core/greet "Mauricio")
+exit
+(require 'pacman.core)
+(-main)
+exit
+(require 'pacman.core)
+(create-window)
+(require 'pacman.core)
+(create-window)
+(require 'pacman.core)
+(create-window)
+(-main)
+(require 'pacman.core)
+(-main)
+(main)
+(create-window)
+exit
+(require 'pacman.core)
+(-main)
+(load-file "ruta/al/archivo/pacman/core.clj")
+(load-file "my-clojure-app/pacman/core.clj")
+(load-file my-clojure-app/pacman/core.clj")
+exit
+(load-file "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/src/pacman/core.clj")
+(-main)
+(load-file "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/src/pacman/core.clj")
+(-main)
+(require 'pacman.core)
+(-main)
+(require 'pacman.core)
+(-main)
+(require 'pacman.core)
+(-main)
+(require 'pacman.core)
+(-main)
+(require 'pacman.core)
+(-main)
+(load-file "/Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app/src/pacman/core.clj")
+exi
+exit
