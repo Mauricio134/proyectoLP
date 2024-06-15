@@ -12,11 +12,19 @@
 (def open-mouth 270)
 (def closed-mouth 360)
 (def angle (atom closed-mouth))
-(def direction (atom :right-open))
-(def images (atom {}))
-(def pacman-x (atom 0)) ; Coordenada x inicial de Pacman
-(def pacman-y (atom 0)) ; Coordenada y inicial de Pacman
+
+(def direction1 (atom :right-open))
+(def direction2 (atom :left-open2))
+
+(def pacman1-x (atom 0)) ; Coordenada x inicial del Pacman 1
+(def pacman1-y (atom 10)) ; Coordenada y inicial del Pacman 1
+
+(def pacman2-x (atom 700)) ; Coordenada x inicial del Pacman 2
+(def pacman2-y (atom 730)) ; Coordenada y inicial del Pacman 2
+
 (def move-step 5) ; Cantidad de píxeles que Pacman se mueve en cada paso
+
+(def images (atom {}))
 
 (defn load-image [file-path]
   (try
@@ -41,40 +49,53 @@
 (defn draw-pacman [g x y image]
   (.drawImage g image x y pacman-size pacman-size nil))
 
-(defn get-current-image []
-  (let [key (if (= @angle closed-mouth) :closed @direction)]
+(defn get-current-image [direction]
+  (let [key (if (= @angle closed-mouth)
+              (if (.endsWith (name @direction) "2") :closed2 :closed)
+              @direction)]
     (get @images key))) ; fallback to :closed if key not found
 
-(defn move-pacman [panel-width panel-height]
+(defn move-pacman [pacman-x pacman-y direction panel-width panel-height]
   (cond
     (= @direction :up-open) (swap! pacman-y #(max 0 (- % move-step)))
     (= @direction :down-open) (swap! pacman-y #(min (- panel-height pacman-size) (+ % move-step)))
     (= @direction :left-open) (swap! pacman-x #(max 0 (- % move-step)))
-    (= @direction :right-open) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))))
+    (= @direction :right-open) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))
+    (= @direction :up-open2) (swap! pacman-y #(max 0 (- % move-step)))
+    (= @direction :down-open2) (swap! pacman-y #(min (- panel-height pacman-size) (+ % move-step)))
+    (= @direction :left-open2) (swap! pacman-x #(max 0 (- % move-step)))
+    (= @direction :right-open2) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))))
 
 (defn create-pacman-panel []
   (proxy [JPanel ActionListener KeyListener] []
     (keyPressed [e]
       (cond
-        (= (.getKeyCode e) KeyEvent/VK_W) (reset! direction :up-open)
-        (= (.getKeyCode e) KeyEvent/VK_S) (reset! direction :down-open)
-        (= (.getKeyCode e) KeyEvent/VK_D) (reset! direction :right-open)
-        (= (.getKeyCode e) KeyEvent/VK_A) (reset! direction :left-open)))
+        (= (.getKeyCode e) KeyEvent/VK_W) (reset! direction1 :up-open)
+        (= (.getKeyCode e) KeyEvent/VK_S) (reset! direction1 :down-open)
+        (= (.getKeyCode e) KeyEvent/VK_D) (reset! direction1 :right-open)
+        (= (.getKeyCode e) KeyEvent/VK_A) (reset! direction1 :left-open)
+        (= (.getKeyCode e) KeyEvent/VK_UP) (reset! direction2 :up-open2)
+        (= (.getKeyCode e) KeyEvent/VK_DOWN) (reset! direction2 :down-open2)
+        (= (.getKeyCode e) KeyEvent/VK_RIGHT) (reset! direction2 :right-open2)
+        (= (.getKeyCode e) KeyEvent/VK_LEFT) (reset! direction2 :left-open2)))
     (keyReleased [e])
     (keyTyped [e])
     (paintComponent [g]
       (proxy-super paintComponent g)
-      (let [image (get-current-image)]
-        (if image
-          (draw-pacman g @pacman-x @pacman-y image)
-          (println "No image to draw for key:" (if (= @angle closed-mouth) :closed (keyword (name @direction) "-open"))))))))
+      (let [image1 (get-current-image direction1)
+            image2 (get-current-image direction2)]
+        (when image1
+          (draw-pacman g @pacman1-x @pacman1-y image1))
+        (when image2
+          (draw-pacman g @pacman2-x @pacman2-y image2))))))
 
 (defn create-window []
   (let [frame (JFrame. "Pacman")
         panel (create-pacman-panel)
         timer (Timer. 100 (reify ActionListener
                             (actionPerformed [_ _]
-                              (move-pacman (.getWidth panel) (.getHeight panel))
+                              (move-pacman pacman1-x pacman1-y direction1 (.getWidth panel) (.getHeight panel))
+                              (move-pacman pacman2-x pacman2-y direction2 (.getWidth panel) (.getHeight panel))
                               (swap! angle #(if (= % closed-mouth) open-mouth closed-mouth))
                               (.repaint panel))))]
     (doto frame
@@ -93,7 +114,12 @@
                   :up-open (load-image "resources/imgs/pacman-up-open.png")
                   :down-open (load-image "resources/imgs/pacman-down-open.png")
                   :left-open (load-image "resources/imgs/pacman-left-open.png")
-                  :right-open (load-image "resources/imgs/pacman-right-open.png")})
+                  :right-open (load-image "resources/imgs/pacman-right-open.png")
+                  :closed2 (load-image "resources/imgs/pacman2-closed.png")
+                  :up-open2 (load-image "resources/imgs/pacman2-up-open.png")
+                  :down-open2 (load-image "resources/imgs/pacman2-down-open.png")
+                  :left-open2 (load-image "resources/imgs/pacman2-left-open.png")
+                  :right-open2 (load-image "resources/imgs/pacman2-right-open.png")})
   (println "Images loaded:" @images)
   (doseq [[key image] @images]
     (if image
