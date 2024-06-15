@@ -8,12 +8,15 @@
            (javax.imageio ImageIO)
            (java.io File)))
 
-(def pacman-size 50)
+(def pacman-size 20)
 (def open-mouth 270)
 (def closed-mouth 360)
 (def angle (atom closed-mouth))
 (def direction (atom :right-open))
 (def images (atom {}))
+(def pacman-x (atom 0)) ; Coordenada x inicial de Pacman
+(def pacman-y (atom 0)) ; Coordenada y inicial de Pacman
+(def move-step 5) ; Cantidad de píxeles que Pacman se mueve en cada paso
 
 (defn load-image [file-path]
   (try
@@ -35,14 +38,19 @@
       (println "Exception while saving image:" file-path (.getMessage e))
       false)))
 
-(defn draw-pacman [g width height image]
-  (let [x (- (/ width 2) (/ pacman-size 2))
-        y (- (/ height 2) (/ pacman-size 2))]
-    (.drawImage g image x y pacman-size pacman-size nil)))
+(defn draw-pacman [g x y image]
+  (.drawImage g image x y pacman-size pacman-size nil))
 
 (defn get-current-image []
   (let [key (if (= @angle closed-mouth) :closed @direction)]
     (get @images key))) ; fallback to :closed if key not found
+
+(defn move-pacman [panel-width panel-height]
+  (cond
+    (= @direction :up-open) (swap! pacman-y #(max 0 (- % move-step)))
+    (= @direction :down-open) (swap! pacman-y #(min (- panel-height pacman-size) (+ % move-step)))
+    (= @direction :left-open) (swap! pacman-x #(max 0 (- % move-step)))
+    (= @direction :right-open) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))))
 
 (defn create-pacman-panel []
   (proxy [JPanel ActionListener KeyListener] []
@@ -58,7 +66,7 @@
       (proxy-super paintComponent g)
       (let [image (get-current-image)]
         (if image
-          (draw-pacman g (.getWidth this) (.getHeight this) image)
+          (draw-pacman g @pacman-x @pacman-y image)
           (println "No image to draw for key:" (if (= @angle closed-mouth) :closed (keyword (name @direction) "-open"))))))))
 
 (defn create-window []
@@ -66,6 +74,7 @@
         panel (create-pacman-panel)
         timer (Timer. 100 (reify ActionListener
                             (actionPerformed [_ _]
+                              (move-pacman (.getWidth panel) (.getHeight panel))
                               (swap! angle #(if (= % closed-mouth) open-mouth closed-mouth))
                               (.repaint panel))))]
     (doto frame
