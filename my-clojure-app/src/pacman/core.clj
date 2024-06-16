@@ -6,7 +6,8 @@
            (java.awt.image BufferedImage)
            (java.awt.event ActionListener KeyEvent KeyListener)
            (javax.imageio ImageIO)
-           (java.io File)))
+           (java.io File)
+           (java.lang Thread)))
 
 (def pacman-size 20)
 (def open-mouth 270)
@@ -27,9 +28,12 @@
 (def images (atom {}))
 
 ;; Caracteriristicas de la bomba
-(def bomb-size 50)
-(def bomb-position {:x 200 :y 200})
-(def bomb-visible (atom false))
+(def bomb-config {:size 20 :positionx 200 :positiony 200 :visible false :explosion-time nil :max-explosion-size 100 :image nil})
+
+(def players-bombs (atom {:pacman1 nil :pacman2 nil :blinky nil :pinky nil :inky nil :clyde nil}))
+
+(defn add-bomb-to-player [id]
+  (swap! players-bombs assoc id (atom bomb-config)))
 
 (defn load-image [file-path]
   (try
@@ -42,24 +46,67 @@
       (println "Exception while loading image:" file-path (.getMessage e))
       nil)))
 
-;; (defn save-image [image file-path format]
-;;   (try
-;;     (ImageIO/write image format (File. file-path))
-;;     (println "Image saved successfully:" file-path)
-;;     true
-;;     (catch Exception e
-;;       (println "Exception while saving image:" file-path (.getMessage e))
-;;       false)))
-
-(defn draw-pacman [g x y image]
-  (.drawImage g image x y pacman-size pacman-size nil))
-
+(defn draw-image [g x y sizex sizey image]
+  (.drawImage g image x y sizex sizey nil))
 
 (defn get-current-image [direction]
   (let [key (if (= @angle closed-mouth)
               (if (.endsWith (name @direction) "2") :closed2 :closed)
               @direction)]
     (get @images key))) ; fallback to :closed if key not found
+
+(defn get-bombs-feature [player-id feat]
+  (let [player-atom (get @players-bombs player-id)]
+    (when player-atom
+      (feat @player-atom))))
+
+(defn update-bombs-feature [player-id feat value]
+  (when-let [player-atom (get @players-bombs player-id)]
+    (swap! player-atom assoc feat value)))
+
+(defn collision-with-explosion-enemy1 []
+  (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :pacman1 :positionx)
+          explosion-center-y (get-bombs-feature :pacman1 :positiony)
+          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :pacman1 :max-explosion-size) 2) (/ pacman-size 2))))))
+
+(defn collision-with-explosion-own1 []
+  (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :pacman1 :positionx)
+          explosion-center-y (get-bombs-feature :pacman1 :positiony)
+          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :pacman1 :max-explosion-size) 2) (/ pacman-size 2))))))
+
+(defn collision-with-explosion-enemy2 []
+  (when (and (not (= (get-bombs-feature :pacman2 :explosion-time) nil)) (not (= (get-bombs-feature :pacman2 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :pacman2 :positionx)
+          explosion-center-y (get-bombs-feature :pacman2 :positiony)
+          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :pacman2 :max-explosion-size) 2) (/ pacman-size 2))))))
+
+(defn collision-with-explosion-own2 []
+  (when (and (not (= (get-bombs-feature :pacman2 :explosion-time) nil)) (not (= (get-bombs-feature :pacman2 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :pacman2 :positionx)
+          explosion-center-y (get-bombs-feature :pacman2 :positiony)
+          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :pacman2 :max-explosion-size) 2) (/ pacman-size 2))))))
 
 (defn move-pacman [pacman-x pacman-y direction panel-width panel-height]
   (cond
@@ -70,7 +117,19 @@
     (= @direction :up-open2) (swap! pacman-y #(max 0 (- % move-step)))
     (= @direction :down-open2) (swap! pacman-y #(min (- panel-height pacman-size) (+ % move-step)))
     (= @direction :left-open2) (swap! pacman-x #(max 0 (- % move-step)))
-    (= @direction :right-open2) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))))
+    (= @direction :right-open2) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step))))
+  (when (collision-with-explosion-enemy1)
+    (reset! pacman2-x 700)
+    (reset! pacman2-y 730))
+  (when (collision-with-explosion-own1)
+    (reset! pacman1-x 0)
+    (reset! pacman1-y 0))
+  (when (collision-with-explosion-enemy2)
+    (reset! pacman1-x 0)
+    (reset! pacman1-y 0))
+  (when (collision-with-explosion-own2)
+    (reset! pacman2-x 700) 
+    (reset! pacman2-y 730)))
 
 (defn create-pacman-panel []
   (proxy [JPanel ActionListener KeyListener] []
@@ -83,17 +142,80 @@
         (= (.getKeyCode e) KeyEvent/VK_UP) (reset! direction2 :up-open2)
         (= (.getKeyCode e) KeyEvent/VK_DOWN) (reset! direction2 :down-open2)
         (= (.getKeyCode e) KeyEvent/VK_RIGHT) (reset! direction2 :right-open2)
-        (= (.getKeyCode e) KeyEvent/VK_LEFT) (reset! direction2 :left-open2)))
+        (= (.getKeyCode e) KeyEvent/VK_LEFT) (reset! direction2 :left-open2)
+        (and (= (.getKeyCode e) KeyEvent/VK_SPACE) (= (get-bombs-feature :pacman1 :visible) false)) 
+        (do 
+          (update-bombs-feature :pacman1 :positionx @pacman1-x)
+          (update-bombs-feature :pacman1 :positiony @pacman1-y)
+          (update-bombs-feature :pacman1 :visible true)
+          (future
+            (Thread/sleep 2000)
+            (update-bombs-feature :pacman1 :visible false)
+            (update-bombs-feature :pacman1 :explosion-time 10000)))
+        (and (= (.getKeyCode e) KeyEvent/VK_ENTER) (= (get-bombs-feature :pacman2 :visible) false))
+        (do
+          (update-bombs-feature :pacman2 :positionx @pacman2-x)
+          (update-bombs-feature :pacman2 :positiony @pacman2-y)
+          (update-bombs-feature :pacman2 :visible true)
+          (future
+            (Thread/sleep 2000)
+            (update-bombs-feature :pacman2 :visible false)
+            (update-bombs-feature :pacman2 :explosion-time 10000)))))
     (keyReleased [e])
     (keyTyped [e])
     (paintComponent [g]
       (proxy-super paintComponent g)
-      (let [image1 (get-current-image direction1)
-            image2 (get-current-image direction2)]
-        (when image1
-          (draw-pacman g @pacman1-x @pacman1-y image1))
-        (when image2
-          (draw-pacman g @pacman2-x @pacman2-y image2))))))
+      (let [pacman-image1 (get-current-image direction1)
+            pacman-image2 (get-current-image direction2)
+            bomb-image (get @images :bomb)]
+        (when pacman-image1
+          (draw-image g @pacman1-x @pacman1-y pacman-size pacman-size pacman-image1)
+          (let [bomb-exist (get @players-bombs :pacman1)]
+            (when (= bomb-exist nil)
+              (add-bomb-to-player :pacman1)
+              (update-bombs-feature :pacman1 :image bomb-image))))
+        (when pacman-image2
+          (draw-image g @pacman2-x @pacman2-y pacman-size pacman-size pacman-image2)
+          (let [bomb-exist (get @players-bombs :pacman2)]
+             (when (= bomb-exist nil)
+               (add-bomb-to-player :pacman2)
+               (update-bombs-feature :pacman2 :image bomb-image))))
+        (when (= (get-bombs-feature :pacman1 :visible) true)
+          (draw-image g (get-bombs-feature :pacman1 :positionx) (get-bombs-feature :pacman1 :positiony) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :image)))
+        (when (= (get-bombs-feature :pacman2 :visible) true)
+          (draw-image g (get-bombs-feature :pacman2 :positionx) (get-bombs-feature :pacman2 :positiony) (get-bombs-feature :pacman2 :size) (get-bombs-feature :pacman2 :size) (get-bombs-feature :pacman2 :image)))
+        (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
+          (let [elapsed-time (- (System/currentTimeMillis) (get-bombs-feature :pacman1 :explosion-time))
+                current-explosion-size (min elapsed-time (get-bombs-feature :pacman1 :max-explosion-size))
+                explosion-x (get-bombs-feature :pacman1 :positionx)
+                explosion-y (get-bombs-feature :pacman1 :positiony)]
+            (.setColor g Color/YELLOW)
+            (.fillOval g (- explosion-x (/ current-explosion-size 2))
+                       (- explosion-y (/ current-explosion-size 2))
+                       current-explosion-size current-explosion-size)
+            (update-bombs-feature :pacman1 :explosion-time nil)))
+        (when (and (not (= (get-bombs-feature :pacman2 :explosion-time) nil)) (not (= (get-bombs-feature :pacman2 :visible) true)))
+          (let [elapsed-time (- (System/currentTimeMillis) (get-bombs-feature :pacman2 :explosion-time))
+                current-explosion-size (min elapsed-time (get-bombs-feature :pacman2 :max-explosion-size))
+                explosion-x (get-bombs-feature :pacman2 :positionx)
+                explosion-y (get-bombs-feature :pacman2 :positiony)]
+            (.setColor g Color/RED)
+            (.fillOval g (- explosion-x (/ current-explosion-size 2))
+                       (- explosion-y (/ current-explosion-size 2))
+                       current-explosion-size current-explosion-size)
+            (update-bombs-feature :pacman2 :explosion-time nil)))
+        (when (collision-with-explosion-enemy1)
+          (reset! pacman2-x 700)
+          (reset! pacman2-y 730))
+        (when (collision-with-explosion-own1)
+          (reset! pacman1-x 0)
+          (reset! pacman1-y 0))
+        (when (collision-with-explosion-enemy2)
+          (reset! pacman1-x 0)
+          (reset! pacman1-y 0))
+        (when (collision-with-explosion-own2)
+          (reset! pacman2-x 700)
+          (reset! pacman2-y 730))))))
 
 (defn create-window []
   (let [frame (JFrame. "Pacman")
@@ -125,7 +247,8 @@
                   :up-open2 (load-image "resources/imgs/pacman2-up-open.png")
                   :down-open2 (load-image "resources/imgs/pacman2-down-open.png")
                   :left-open2 (load-image "resources/imgs/pacman2-left-open.png")
-                  :right-open2 (load-image "resources/imgs/pacman2-right-open.png")})
+                  :right-open2 (load-image "resources/imgs/pacman2-right-open.png")
+                  :bomb (load-image "resources/imgs/Bomba.png")})
   (println "Images loaded:" @images)
   (doseq [[key image] @images]
     (if image
