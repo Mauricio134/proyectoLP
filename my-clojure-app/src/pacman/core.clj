@@ -22,12 +22,12 @@
 (def pacman2-x (atom 700)) ; Coordenada x inicial del Pacman 2
 (def pacman2-y (atom 730)) ; Coordenada y inicial del Pacman 2
 
-(def move-step 10) ; Cantidad de píxeles que Pacman se mueve en cada paso
+(def move-step 8) ; Cantidad de píxeles que Pacman se mueve en cada paso
 
 (def images (atom {}))
 
 ;; Caracteriristicas de la bomba
-(def bomb-config {:size 20 :positionx 200 :positiony 200 :visible false :explosion-time nil :max-explosion-size 200 :image nil})
+(def bomb-config {:size 20 :positionx 200 :positiony 200 :visible false :explosion-time nil :max-explosion-size 150 :image nil})
 
 (def players-bombs (atom {:pacman1 nil :pacman2 nil :blinky nil :pinky nil :inky nil :clyde nil}))
 
