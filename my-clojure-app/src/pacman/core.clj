@@ -6,7 +6,8 @@
            (java.awt.image BufferedImage)
            (java.awt.event ActionListener KeyEvent KeyListener)
            (javax.imageio ImageIO)
-           (java.io File)))
+           (java.io File)
+           (java.lang Thread)))
 
 (def pacman-size 20)
 (def open-mouth 270)
@@ -17,6 +18,13 @@
 (def pacman-x (atom 0)) ; Coordenada x inicial de Pacman
 (def pacman-y (atom 0)) ; Coordenada y inicial de Pacman
 (def move-step 5) ; Cantidad de píxeles que Pacman se mueve en cada paso
+
+;; Configuracion de la bomba
+(def bomb-size 20)
+(def bomb-position (atom {:x 200 :y 200}))
+(def bomb-visible (atom false))
+(def explosion-time (atom nil))
+(def max-explosion-size 100)
 
 (defn load-image [file-path]
   (try
@@ -38,19 +46,33 @@
 ;;       (println "Exception while saving image:" file-path (.getMessage e))
 ;;       false)))
 
-(defn draw-pacman [g x y image]
-  (.drawImage g image x y pacman-size pacman-size nil))
+(defn draw-image [g x y sizex sizey image]
+  (.drawImage g image x y sizex sizey nil))
 
 (defn get-current-image []
   (let [key (if (= @angle closed-mouth) :closed @direction)]
-    (get @images key))) ; fallback to :closed if key not found
+    (get @images key)))
+
+(defn collision-with-explosion? []
+  (when (and @explosion-time (not @bomb-visible))
+    (let [explosion-center-x (:x @bomb-position)
+          explosion-center-y (:y @bomb-position)
+          pacman-center-x (+ @pacman-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ max-explosion-size 2) (/ pacman-size 2))))))
 
 (defn move-pacman [panel-width panel-height]
   (cond
     (= @direction :up-open) (swap! pacman-y #(max 0 (- % move-step)))
     (= @direction :down-open) (swap! pacman-y #(min (- panel-height pacman-size) (+ % move-step)))
     (= @direction :left-open) (swap! pacman-x #(max 0 (- % move-step)))
-    (= @direction :right-open) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))))
+    (= @direction :right-open) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step))))
+  (when (collision-with-explosion?)
+    (reset! pacman-x 0)
+    (reset! pacman-y 0)))
 
 (defn create-pacman-panel []
   (proxy [JPanel ActionListener KeyListener] []
@@ -59,15 +81,39 @@
         (= (.getKeyCode e) KeyEvent/VK_W) (reset! direction :up-open)
         (= (.getKeyCode e) KeyEvent/VK_S) (reset! direction :down-open)
         (= (.getKeyCode e) KeyEvent/VK_D) (reset! direction :right-open)
-        (= (.getKeyCode e) KeyEvent/VK_A) (reset! direction :left-open)))
+        (= (.getKeyCode e) KeyEvent/VK_A) (reset! direction :left-open)
+        (and (= (.getKeyCode e) KeyEvent/VK_SPACE) (not @bomb-visible) (nil? @explosion-time))
+        (do
+          (reset! bomb-position {:x @pacman-x :y @pacman-y})
+          (reset! bomb-visible true);; Detener el timer anterior si existe
+          (future
+            (Thread/sleep 2000)
+            (reset! bomb-visible false)
+            (reset! explosion-time 1000)))))
+
     (keyReleased [e])
     (keyTyped [e])
     (paintComponent [g]
       (proxy-super paintComponent g)
-      (let [image (get-current-image)]
-        (if image
-          (draw-pacman g @pacman-x @pacman-y image)
-          (println "No image to draw for key:" (if (= @angle closed-mouth) :closed (keyword (name @direction) "-open"))))))))
+      (let [pacman-image (get-current-image)
+            bomb-image (get @images :bomb)]
+        (when pacman-image
+          (draw-image g @pacman-x @pacman-y pacman-size pacman-size pacman-image))
+        (when @bomb-visible
+          (draw-image g (:x @bomb-position) (:y @bomb-position) bomb-size bomb-size bomb-image))
+        (when (and @explosion-time (not @bomb-visible))
+          (let [elapsed-time (- (System/currentTimeMillis) @explosion-time)
+                current-explosion-size (min elapsed-time max-explosion-size)
+                explosion-x (:x @bomb-position)
+                explosion-y (:y @bomb-position)]
+            (.setColor g Color/RED)
+            (.fillOval g (- explosion-x (/ current-explosion-size 2))
+                       (- explosion-y (/ current-explosion-size 2))
+                       current-explosion-size current-explosion-size)
+            (reset! explosion-time nil)))
+        (when (collision-with-explosion?)
+          (reset! pacman-x 0)
+          (reset! pacman-y 0))))))
 
 (defn create-window []
   (let [frame (JFrame. "Pacman")
@@ -95,13 +141,11 @@
                   :left-open (load-image "resources/imgs/pacman-left-open.png")
                   :right-open (load-image "resources/imgs/pacman-right-open.png")
                   :bomb (load-image "resources/imgs/Bomba.png")})
-  (println "Images loaded:" @images)
   (doseq [[key image] @images]
     (if image
       (println (str "Image for key " key " is loaded successfully."))
       (println (str "Image for key " key " is not loaded.")))))
 
 (defn -main [& args]
-  (println "Current working directory:" (System/getProperty "user.dir"))
   (load-images)
   (create-window))
