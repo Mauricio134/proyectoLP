@@ -26,6 +26,11 @@
 
 (def images (atom {}))
 
+;; Caracteriristicas de la bomba
+(def bomb-size 50)
+(def bomb-position {:x 200 :y 200})
+(def bomb-visible (atom false))
+
 (defn load-image [file-path]
   (try
     (let [image (ImageIO/read (File. file-path))]
@@ -37,17 +42,18 @@
       (println "Exception while loading image:" file-path (.getMessage e))
       nil)))
 
-(defn save-image [image file-path format]
-  (try
-    (ImageIO/write image format (File. file-path))
-    (println "Image saved successfully:" file-path)
-    true
-    (catch Exception e
-      (println "Exception while saving image:" file-path (.getMessage e))
-      false)))
+;; (defn save-image [image file-path format]
+;;   (try
+;;     (ImageIO/write image format (File. file-path))
+;;     (println "Image saved successfully:" file-path)
+;;     true
+;;     (catch Exception e
+;;       (println "Exception while saving image:" file-path (.getMessage e))
+;;       false)))
 
 (defn draw-pacman [g x y image]
   (.drawImage g image x y pacman-size pacman-size nil))
+
 
 (defn get-current-image [direction]
   (let [key (if (= @angle closed-mouth)
