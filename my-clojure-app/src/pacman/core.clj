@@ -19,8 +19,8 @@
 
 (def pacman1-x (atom 0))  ; Pacman 1 starts at the second cell of the second row
 (def pacman1-y (atom 0))
-(def pacman2-x (atom 0)) ; Pacman 2 starts at the second cell of the last row but one
-(def pacman2-y (atom 0))
+(def pacman2-x (atom 720)) ; Pacman 2 starts at the second cell of the last row but one
+(def pacman2-y (atom 720))
 
 (def move-step 8)
 (def images (atom {}))
