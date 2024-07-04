@@ -17,8 +17,8 @@
 (def direction1 (atom :right-open))
 (def direction2 (atom :left-open2))
 
-(def pacman1-x (atom 0))  ; Pacman 1 starts at the second cell of the second row
-(def pacman1-y (atom 0))
+(def pacman1-x (atom 20))  ; Pacman 1 starts at the second cell of the second row
+(def pacman1-y (atom 20))
 (def pacman2-x (atom 720)) ; Pacman 2 starts at the second cell of the last row but one
 (def pacman2-y (atom 720))
 
@@ -26,11 +26,11 @@
 (def images (atom {}))
 
 (def map-grid
-  [[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [0 0 1 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
+  [[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+   [1 0 1 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
    [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
    [1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
    [1 0 1 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
@@ -231,17 +231,17 @@
       (reset! pacman-y next-y))
 
     (when (collision-with-explosion-enemy1)
-      (reset! pacman2-x 700)
-      (reset! pacman2-y 730))
+      (reset! pacman2-x 720)
+      (reset! pacman2-y 720))
     (when (collision-with-explosion-own1)
-      (reset! pacman1-x 0)
-      (reset! pacman1-y 0))
+      (reset! pacman1-x 20)
+      (reset! pacman1-y 20))
     (when (collision-with-explosion-enemy2)
-      (reset! pacman1-x 0)
-      (reset! pacman1-y 0))
+      (reset! pacman1-x 20)
+      (reset! pacman1-y 20))
     (when (collision-with-explosion-own2)
-      (reset! pacman2-x 700)
-      (reset! pacman2-y 730))))
+      (reset! pacman2-x 720)
+      (reset! pacman2-y 720))))
 
 ;ESTA ES LA LOGICA QUE FALTA TERMINAR, PARA QUE LA COLISION FUNCIONE
 ;(defn move-pacman [pacman-x pacman-y direction map-grid]
@@ -347,17 +347,17 @@
                        current-explosion-size current-explosion-size)
             (update-bombs-feature :pacman2 :explosion-time nil)))
         (when (collision-with-explosion-enemy1)
-          (reset! pacman2-x 700)
-          (reset! pacman2-y 730))
+          (reset! pacman2-x 720)
+          (reset! pacman2-y 720))
         (when (collision-with-explosion-own1)
-          (reset! pacman1-x 0)
-          (reset! pacman1-y 0))
+          (reset! pacman1-x 20)
+          (reset! pacman1-y 20))
         (when (collision-with-explosion-enemy2)
-          (reset! pacman1-x 0)
-          (reset! pacman1-y 0))
+          (reset! pacman1-x 20)
+          (reset! pacman1-y 20))
         (when (collision-with-explosion-own2)
-          (reset! pacman2-x 700)
-          (reset! pacman2-y 730))))))
+          (reset! pacman2-x 720)
+          (reset! pacman2-y 720))))))
 
 (defn create-window []
   (let [frame (JFrame. "Pacman")
