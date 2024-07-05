@@ -103,8 +103,7 @@
   (let [key (if (= @angle closed-mouth)
               (if (.endsWith (name @direction) "2") :closed2 :closed)
               @direction)]
-    (get @images key))) ; fallback to :closed if key not found
-
+    (get @images key)))
 
 (defn get-current-ghost-image [direction]
   (let [key (case direction
@@ -190,12 +189,6 @@
           distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
       (< distance (+ (/ (get-bombs-feature :pacman2 :max-explosion-size) 2) (/ pacman-size 2))))))
 
-
-
-
-
-
-
 (defn move-pacman [pacman-x pacman-y direction panel-width panel-height map-grid]
   (let [
         grid-width (count (first map-grid))  ; Total number of columns
@@ -243,10 +236,6 @@
       (reset! pacman2-x 720)
       (reset! pacman2-y 720))))
 
-
-
-
-
 (defn move-ghost-auto [ghost-x ghost-y direction panel-width panel-height map-grid]
   (let [grid-width (count (first map-grid))  ; Total number of columns
         grid-height (count map-grid)         ; Total number of rows
@@ -279,12 +268,6 @@
                (= (get-in map-grid [grid-y grid-x]) 0))
       (reset! ghost-x next-x)
       (reset! ghost-y next-y))))
-
-
-
-
-
-
 
 (defn draw-map [g]
   (doseq [y (range (count map-grid))
