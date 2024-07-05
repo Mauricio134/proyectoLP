@@ -202,6 +202,51 @@
           distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
       (< distance (+ (/ (get-bombs-feature :pacman2 :max-explosion-size) 2) (/ pacman-size 2))))))
 
+(defn collision-with-explosion-ghost1-pacman1 []
+  (when (and (not (= (get-bombs-feature :ghost1 :explosion-time) nil)) (not (= (get-bombs-feature :ghost1 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :ghost1 :positionx)
+          explosion-center-y (get-bombs-feature :ghost1 :positiony)
+          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :ghost1 :max-explosion-size) 2) (/ pacman-size 2))))))
+
+(defn collision-with-explosion-ghost1-pacman2 []
+  (when (and (not (= (get-bombs-feature :ghost1 :explosion-time) nil)) (not (= (get-bombs-feature :ghost1 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :ghost1 :positionx)
+          explosion-center-y (get-bombs-feature :ghost1 :positiony)
+          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :ghost1 :max-explosion-size) 2) (/ pacman-size 2))))))
+
+(defn collision-with-explosion-ghost2-pacman1 []
+  (when (and (not (= (get-bombs-feature :ghost2 :explosion-time) nil)) (not (= (get-bombs-feature :ghost2 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :ghost2 :positionx)
+          explosion-center-y (get-bombs-feature :ghost2 :positiony)
+          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :ghost2 :max-explosion-size) 2) (/ pacman-size 2))))))
+
+(defn collision-with-explosion-ghost2-pacman2 []
+  (when (and (not (= (get-bombs-feature :ghost2 :explosion-time) nil)) (not (= (get-bombs-feature :ghost2 :visible) true)))
+    (let [explosion-center-x (get-bombs-feature :ghost2 :positionx)
+          explosion-center-y (get-bombs-feature :ghost2 :positiony)
+          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
+          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
+          dx (- explosion-center-x pacman-center-x)
+          dy (- explosion-center-y pacman-center-y)
+          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+      (< distance (+ (/ (get-bombs-feature :ghost2 :max-explosion-size) 2) (/ pacman-size 2))))))
+
+
 
 
 
@@ -252,10 +297,19 @@
       (reset! pacman1-y 20))
     (when (collision-with-explosion-own2)
       (reset! pacman2-x 720)
+      (reset! pacman2-y 720))
+    (when (collision-with-explosion-ghost1-pacman1)
+      (reset! pacman1-x 20)
+      (reset! pacman1-y 20))
+    (when (collision-with-explosion-ghost1-pacman2)
+      (reset! pacman2-x 720)
+      (reset! pacman2-y 720))
+    (when (collision-with-explosion-ghost2-pacman1)
+      (reset! pacman1-x 20)
+      (reset! pacman1-y 20))
+    (when (collision-with-explosion-ghost2-pacman2)
+      (reset! pacman2-x 720)
       (reset! pacman2-y 720))))
-
-
-;(def directions [:right :down :left :up])
 
 
 (defn valid-position? [x y grid-width grid-height map-grid]
@@ -329,7 +383,8 @@
           (future
             (Thread/sleep 2000)
             (update-bombs-feature :pacman1 :visible false)
-            (update-bombs-feature :pacman1 :explosion-time 10000)))
+            (update-bombs-feature :pacman1 :explosion-time (System/currentTimeMillis))))
+
         (and (= (.getKeyCode e) KeyEvent/VK_ENTER) (= (get-bombs-feature :pacman2 :visible) false))
         (do
           (update-bombs-feature :pacman2 :positionx @pacman2-x)
@@ -338,9 +393,11 @@
           (future
             (Thread/sleep 2000)
             (update-bombs-feature :pacman2 :visible false)
-            (update-bombs-feature :pacman2 :explosion-time 10000)))))
+            (update-bombs-feature :pacman2 :explosion-time (System/currentTimeMillis))))))
+
     (keyReleased [e])
     (keyTyped [e])
+
     (paintComponent [g]
       (proxy-super paintComponent g)
       (draw-map g)
@@ -350,67 +407,57 @@
             ghost-image2 (get-current-ghost-image direction4)
             bomb-image (get @images :bomb)]
 
+        ;; Dibujar Pac-Mans
         (when pacman-image1
           (draw-image g @pacman1-x @pacman1-y pacman-size pacman-size pacman-image1)
-          (let [bomb-exist (get @players-bombs :pacman1)]
-            (when (= bomb-exist nil)
-              (add-bomb-to-player :pacman1)
-              (update-bombs-feature :pacman1 :image bomb-image))))
+          (when (nil? (get @players-bombs :pacman1))
+            (add-bomb-to-player :pacman1)
+            (update-bombs-feature :pacman1 :image bomb-image)))
 
         (when pacman-image2
           (draw-image g @pacman2-x @pacman2-y pacman-size pacman-size pacman-image2)
-          (let [bomb-exist (get @players-bombs :pacman2)]
-            (when (= bomb-exist nil)
-              (add-bomb-to-player :pacman2)
-              (update-bombs-feature :pacman2 :image bomb-image))))
+          (when (nil? (get @players-bombs :pacman2))
+            (add-bomb-to-player :pacman2)
+            (update-bombs-feature :pacman2 :image bomb-image)))
 
+        ;; Dibujar Fantasmas
         (when ghost-image1
           (draw-image g @ghost1-x @ghost1-y pacman-size pacman-size ghost-image1))
-
         (when ghost-image2
           (draw-image g @ghost2-x @ghost2-y pacman-size pacman-size ghost-image2))
 
-        ;; Dibujar bombas de los fantasmas
+        ;; Dibujar Bombas de los Pac-Mans
+        (doseq [pacman [:pacman1 :pacman2]]
+          (when (= (get-bombs-feature pacman :visible) true)
+            (draw-image g (get-bombs-feature pacman :positionx) (get-bombs-feature pacman :positiony) (get-bombs-feature pacman :size) (get-bombs-feature pacman :size) (get-bombs-feature pacman :image)))
+          (when (and (not (nil? (get-bombs-feature pacman :explosion-time))) (not (= (get-bombs-feature pacman :visible) true)))
+            (let [elapsed-time (- (System/currentTimeMillis) (get-bombs-feature pacman :explosion-time))
+                  current-explosion-size (min elapsed-time (get-bombs-feature pacman :max-explosion-size))
+                  explosion-x (get-bombs-feature pacman :positionx)
+                  explosion-y (get-bombs-feature pacman :positiony)]
+              (.setColor g (if (= pacman :pacman1) Color/YELLOW Color/RED))
+              (.fillOval g (- explosion-x (/ current-explosion-size 2))
+                         (- explosion-y (/ current-explosion-size 2))
+                         current-explosion-size current-explosion-size)
+              (update-bombs-feature pacman :explosion-time nil))))
+
+        ;; Dibujar Bombas de los Fantasmas
         (doseq [ghost [:ghost1 :ghost2]]
           (let [bomb (get @ghost-bombs ghost)]
             (when (:visible bomb)
               (draw-image g (:positionx bomb) (:positiony bomb) (:size bomb) (:size bomb) bomb-image))
-            (when (and (not (= (:explosion-time bomb) nil)) (not (:visible bomb)))
+            (when (and (not (nil? (:explosion-time bomb))) (not (:visible bomb)))
               (let [elapsed-time (- (System/currentTimeMillis) (:explosion-time bomb))
                     current-explosion-size (min elapsed-time (:max-explosion-size bomb))
                     explosion-x (:positionx bomb)
                     explosion-y (:positiony bomb)]
-                (.setColor g (if (= ghost :ghost1) Color/YELLOW Color/RED))
+                (.setColor g (if (= ghost :ghost1) Color/BLUE Color/GREEN))
                 (.fillOval g (- explosion-x (/ current-explosion-size 2))
                            (- explosion-y (/ current-explosion-size 2))
                            current-explosion-size current-explosion-size)
                 (swap! ghost-bombs assoc-in [ghost :explosion-time] nil)))))
 
-        (when (= (get-bombs-feature :pacman1 :visible) true)
-          (draw-image g (get-bombs-feature :pacman1 :positionx) (get-bombs-feature :pacman1 :positiony) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :image)))
-        (when (= (get-bombs-feature :pacman2 :visible) true)
-          (draw-image g (get-bombs-feature :pacman2 :positionx) (get-bombs-feature :pacman2 :positiony) (get-bombs-feature :pacman2 :size) (get-bombs-feature :pacman2 :size) (get-bombs-feature :pacman2 :image)))
-        (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
-          (let [elapsed-time (- (System/currentTimeMillis) (get-bombs-feature :pacman1 :explosion-time))
-                current-explosion-size (min elapsed-time (get-bombs-feature :pacman1 :max-explosion-size))
-                explosion-x (get-bombs-feature :pacman1 :positionx)
-                explosion-y (get-bombs-feature :pacman1 :positiony)]
-            (.setColor g Color/YELLOW)
-            (.fillOval g (- explosion-x (/ current-explosion-size 2))
-                       (- explosion-y (/ current-explosion-size 2))
-                       current-explosion-size current-explosion-size)
-            (update-bombs-feature :pacman1 :explosion-time nil)))
-        (when (and (not (= (get-bombs-feature :pacman2 :explosion-time) nil)) (not (= (get-bombs-feature :pacman2 :visible) true)))
-          (let [elapsed-time (- (System/currentTimeMillis) (get-bombs-feature :pacman2 :explosion-time))
-                current-explosion-size (min elapsed-time (get-bombs-feature :pacman2 :max-explosion-size))
-                explosion-x (get-bombs-feature :pacman2 :positionx)
-                explosion-y (get-bombs-feature :pacman2 :positiony)]
-            (.setColor g Color/RED)
-            (.fillOval g (- explosion-x (/ current-explosion-size 2))
-                       (- explosion-y (/ current-explosion-size 2))
-                       current-explosion-size current-explosion-size)
-            (update-bombs-feature :pacman2 :explosion-time nil)))
-
+        ;; Verificar Colisiones
         (when (collision-with-explosion-enemy1)
           (reset! pacman2-x 720)
           (reset! pacman2-y 720))
@@ -422,7 +469,20 @@
           (reset! pacman1-y 20))
         (when (collision-with-explosion-own2)
           (reset! pacman2-x 720)
+          (reset! pacman2-y 720))
+        (when (collision-with-explosion-ghost1-pacman1)
+          (reset! pacman1-x 20)
+          (reset! pacman1-y 20))
+        (when (collision-with-explosion-ghost1-pacman2)
+          (reset! pacman2-x 720)
+          (reset! pacman2-y 720))
+        (when (collision-with-explosion-ghost2-pacman1)
+          (reset! pacman1-x 20)
+          (reset! pacman1-y 20))
+        (when (collision-with-explosion-ghost2-pacman2)
+          (reset! pacman2-x 720)
           (reset! pacman2-y 720))))))
+
 
 (schedule-ghost-bombs)
 
