@@ -26,10 +26,10 @@
 (def pacman2-x (atom 720)) ; Pacman 2 starts at the second cell of the last row but one
 (def pacman2-y (atom 720))
 
-(def ghost1-x (atom 0))  ; Pacman 3 empieza en la tercera celda de la segunda fila
-(def ghost1-y (atom 0))
-(def ghost2-x (atom 200))  ; Pacman 4 empieza en la cuarta celda de la segunda fila
-(def ghost2-y (atom 50))
+(def ghost1-x (atom 400))  ; ghost 1 empieza en la tercera celda de la segunda fila
+(def ghost1-y (atom 400))
+(def ghost2-x (atom 400))  ; ghost 2 empieza en la cuarta celda de la segunda fila
+(def ghost2-y (atom 400))
 
 
 
@@ -38,35 +38,35 @@
 
 (def map-grid
   [[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 0 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 1]
+   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1]
+   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
    [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
    [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
    [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
    [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
    [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
    [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
    [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
    [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
    [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
    [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
@@ -78,6 +78,31 @@
    [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]])
 
 (def bomb-config {:size 20 :positionx 200 :positiony 200 :visible false :explosion-time nil :max-explosion-size 150 :image nil})
+
+
+(def ghost-bombs (atom {:ghost1 {:positionx 0 :positiony 0 :visible false :explosion-time nil :size 20 :max-explosion-size 150}
+                        :ghost2 {:positionx 0 :positiony 0 :visible false :explosion-time nil :size 20 :max-explosion-size 150}}))
+
+(defn update-ghost-bombs [ghost]
+  (let [ghost-pos (if (= ghost :ghost1) {:x @ghost1-x :y @ghost1-y} {:x @ghost2-x :y @ghost2-y})
+        bomb (get @ghost-bombs ghost)]
+    (when (not (:visible bomb))
+      (swap! ghost-bombs assoc-in [ghost :positionx] (:x ghost-pos))
+      (swap! ghost-bombs assoc-in [ghost :positiony] (:y ghost-pos))
+      (swap! ghost-bombs assoc-in [ghost :visible] true)
+      (future
+        (Thread/sleep 2000)
+        (swap! ghost-bombs assoc-in [ghost :visible] false)
+        (swap! ghost-bombs assoc-in [ghost :explosion-time] 10000)))))
+
+(defn schedule-ghost-bombs []
+  (future
+    (loop []
+      (update-ghost-bombs :ghost1)
+      (update-ghost-bombs :ghost2)
+      (Thread/sleep 3000)
+      (recur))))
+
 
 (def players-bombs (atom {:pacman1 nil :pacman2 nil :blinky nil :pinky nil :inky nil :clyde nil}))
 
@@ -232,11 +257,6 @@
 
 ;(def directions [:right :down :left :up])
 
-#_(defn update-ghost-direction [direction]
-  (if (not-any? #(= % direction) directions)
-    :right ; Default direction
-    direction))
-
 
 (defn valid-position? [x y grid-width grid-height map-grid]
   (and (>= x 0) (< x grid-width)
@@ -246,7 +266,7 @@
 (defn move-ghost-auto [ghost-x ghost-y direction panel-width panel-height map-grid]
   (let [grid-width (count (first map-grid))    ; Total number of columns
         grid-height (count map-grid)           ; Total number of rows
-        move-step 1                           ; Assume a move step of 20 units
+        move-step 20                           ; Assume a move step of 20 units
         directions [:right :down :left :up]    ; Possible directions
         current-dir-index (atom (.indexOf directions @direction))] ; Current direction index
 
@@ -267,10 +287,13 @@
         (if (valid-position? grid-x grid-y grid-width grid-height map-grid)
           (do
             (reset! ghost-x next-x)
-            (reset! ghost-y next-y)
-            (swap! direction (fn [_] (nth directions (mod (inc @current-dir-index) (count directions))))))
+            (reset! ghost-y next-y))
           (when (< attempts 4)
+            ;; Change direction if the move is invalid
+            (swap! current-dir-index #(mod (inc %) (count directions)))
+            (reset! direction (nth directions @current-dir-index))
             (recur (inc attempts))))))))
+
 
 
 
@@ -282,111 +305,6 @@
       (when (= cell 1)
         (.setColor g Color/GRAY)
         (.fillRect g (* x pacman-size) (* y pacman-size) pacman-size pacman-size)))))
-
-
-#_(defn create-pacman-panel []
-  (proxy [JPanel ActionListener KeyListener] []
-    (keyPressed [e]
-      (cond
-        (= (.getKeyCode e) KeyEvent/VK_W) (reset! direction1 :up-open)
-        (= (.getKeyCode e) KeyEvent/VK_S) (reset! direction1 :down-open)
-        (= (.getKeyCode e) KeyEvent/VK_D) (reset! direction1 :right-open)
-        (= (.getKeyCode e) KeyEvent/VK_A) (reset! direction1 :left-open)
-
-        (= (.getKeyCode e) KeyEvent/VK_UP) (reset! direction2 :up-open2)
-        (= (.getKeyCode e) KeyEvent/VK_DOWN) (reset! direction2 :down-open2)
-        (= (.getKeyCode e) KeyEvent/VK_RIGHT) (reset! direction2 :right-open2)
-        (= (.getKeyCode e) KeyEvent/VK_LEFT) (reset! direction2 :left-open2)
-
-        (and (= (.getKeyCode e) KeyEvent/VK_SPACE) (= (get-bombs-feature :pacman1 :visible) false))
-        (do
-          (update-bombs-feature :pacman1 :positionx @pacman1-x)
-          (update-bombs-feature :pacman1 :positiony @pacman1-y)
-          (update-bombs-feature :pacman1 :visible true)
-          (future
-            (Thread/sleep 2000)
-            (update-bombs-feature :pacman1 :visible false)
-            (update-bombs-feature :pacman1 :explosion-time 10000)))
-        (and (= (.getKeyCode e) KeyEvent/VK_ENTER) (= (get-bombs-feature :pacman2 :visible) false))
-        (do
-          (update-bombs-feature :pacman2 :positionx @pacman2-x)
-          (update-bombs-feature :pacman2 :positiony @pacman2-y)
-          (update-bombs-feature :pacman2 :visible true)
-          (future
-            (Thread/sleep 2000)
-            (update-bombs-feature :pacman2 :visible false)
-            (update-bombs-feature :pacman2 :explosion-time 10000)))))
-    (keyReleased [e])
-    (keyTyped [e])
-    (paintComponent [g]
-      (proxy-super paintComponent g)
-      (draw-map g)
-      (let [pacman-image1 (get-current-image direction1)
-            pacman-image2 (get-current-image direction2)
-            ghost-image1 (get-current-ghost-image direction3)
-            ghost-image2 (get-current-ghost-image direction4)
-            bomb-image (get @images :bomb)]
-
-        (when pacman-image1
-          (draw-image g @pacman1-x @pacman1-y pacman-size pacman-size pacman-image1)
-          (let [bomb-exist (get @players-bombs :pacman1)]
-            (when (= bomb-exist nil)
-              (add-bomb-to-player :pacman1)
-              (update-bombs-feature :pacman1 :image bomb-image))))
-
-        (when pacman-image2
-          (draw-image g @pacman2-x @pacman2-y pacman-size pacman-size pacman-image2)
-          (let [bomb-exist (get @players-bombs :pacman2)]
-            (when (= bomb-exist nil)
-              (add-bomb-to-player :pacman2)
-              (update-bombs-feature :pacman2 :image bomb-image))))
-
-        (when ghost-image1
-          (draw-image g @ghost1-x @ghost1-y pacman-size pacman-size ghost-image1))
-
-        (when ghost-image2
-          (draw-image g @ghost2-x @ghost2-y pacman-size pacman-size ghost-image2))
-
-        (when (= (get-bombs-feature :pacman1 :visible) true)
-          (draw-image g (get-bombs-feature :pacman1 :positionx) (get-bombs-feature :pacman1 :positiony) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :image)))
-        (when (= (get-bombs-feature :pacman2 :visible) true)
-          (draw-image g (get-bombs-feature :pacman2 :positionx) (get-bombs-feature :pacman2 :positiony) (get-bombs-feature :pacman2 :size) (get-bombs-feature :pacman2 :size) (get-bombs-feature :pacman2 :image)))
-        (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
-          (let [elapsed-time (- (System/currentTimeMillis) (get-bombs-feature :pacman1 :explosion-time))
-                current-explosion-size (min elapsed-time (get-bombs-feature :pacman1 :max-explosion-size))
-                explosion-x (get-bombs-feature :pacman1 :positionx)
-                explosion-y (get-bombs-feature :pacman1 :positiony)]
-            (.setColor g Color/YELLOW)
-            (.fillOval g (- explosion-x (/ current-explosion-size 2))
-                       (- explosion-y (/ current-explosion-size 2))
-                       current-explosion-size current-explosion-size)
-            (update-bombs-feature :pacman1 :explosion-time nil)))
-        (when (and (not (= (get-bombs-feature :pacman2 :explosion-time) nil)) (not (= (get-bombs-feature :pacman2 :visible) true)))
-          (let [elapsed-time (- (System/currentTimeMillis) (get-bombs-feature :pacman2 :explosion-time))
-                current-explosion-size (min elapsed-time (get-bombs-feature :pacman2 :max-explosion-size))
-                explosion-x (get-bombs-feature :pacman2 :positionx)
-                explosion-y (get-bombs-feature :pacman2 :positiony)]
-            (.setColor g Color/RED)
-            (.fillOval g (- explosion-x (/ current-explosion-size 2))
-                       (- explosion-y (/ current-explosion-size 2))
-                       current-explosion-size current-explosion-size)
-            (update-bombs-feature :pacman2 :explosion-time nil)))
-
-        (when (collision-with-explosion-enemy1)
-          (reset! pacman2-x 720)
-          (reset! pacman2-y 720))
-        (when (collision-with-explosion-own1)
-          (reset! pacman1-x 20)
-          (reset! pacman1-y 20))
-        (when (collision-with-explosion-enemy2)
-          (reset! pacman1-x 20)
-          (reset! pacman1-y 20))
-        (when (collision-with-explosion-own2)
-          (reset! pacman2-x 720)
-          (reset! pacman2-y 720))))))
-
-
-
 
 
 (defn create-pacman-panel []
@@ -452,7 +370,21 @@
         (when ghost-image2
           (draw-image g @ghost2-x @ghost2-y pacman-size pacman-size ghost-image2))
 
-
+        ;; Dibujar bombas de los fantasmas
+        (doseq [ghost [:ghost1 :ghost2]]
+          (let [bomb (get @ghost-bombs ghost)]
+            (when (:visible bomb)
+              (draw-image g (:positionx bomb) (:positiony bomb) (:size bomb) (:size bomb) bomb-image))
+            (when (and (not (= (:explosion-time bomb) nil)) (not (:visible bomb)))
+              (let [elapsed-time (- (System/currentTimeMillis) (:explosion-time bomb))
+                    current-explosion-size (min elapsed-time (:max-explosion-size bomb))
+                    explosion-x (:positionx bomb)
+                    explosion-y (:positiony bomb)]
+                (.setColor g (if (= ghost :ghost1) Color/YELLOW Color/RED))
+                (.fillOval g (- explosion-x (/ current-explosion-size 2))
+                           (- explosion-y (/ current-explosion-size 2))
+                           current-explosion-size current-explosion-size)
+                (swap! ghost-bombs assoc-in [ghost :explosion-time] nil)))))
 
         (when (= (get-bombs-feature :pacman1 :visible) true)
           (draw-image g (get-bombs-feature :pacman1 :positionx) (get-bombs-feature :pacman1 :positiony) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :image)))
@@ -479,8 +411,6 @@
                        current-explosion-size current-explosion-size)
             (update-bombs-feature :pacman2 :explosion-time nil)))
 
-
-
         (when (collision-with-explosion-enemy1)
           (reset! pacman2-x 720)
           (reset! pacman2-y 720))
@@ -494,7 +424,7 @@
           (reset! pacman2-x 720)
           (reset! pacman2-y 720))))))
 
-
+(schedule-ghost-bombs)
 
 
 
@@ -533,10 +463,10 @@
                   :left-open2 (load-image "resources/imgs/pacman2-left-open.png")
                   :right-open2 (load-image "resources/imgs/pacman2-right-open.png")
 
-                  :up-open3 (load-image "resources/imgs/fantasma1-left.png")
-                  :down-open3 (load-image "resources/imgs/fantasma1-left.png")
-                  :left-open3 (load-image "resources/imgs/fantasma1-left.png")
-                  :right-open3 (load-image "resources/imgs/fantasma1-left.png")
+                  :up2 (load-image "resources/imgs/fantasma1-left.png")
+                  :down2 (load-image "resources/imgs/fantasma1-left.png")
+                  :left2 (load-image "resources/imgs/fantasma1-left.png")
+                  :right2 (load-image "resources/imgs/fantasma1-left.png")
                   :bomb (load-image "resources/imgs/Bomba.png")})
   (println "Images loaded:" @images)
   (doseq [[key image] @images]
