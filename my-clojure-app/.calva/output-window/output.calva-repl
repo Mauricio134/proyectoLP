@@ -36,8 +36,14 @@ You can configure this with the setting:
 ;   - See https://calva.io/connect-sequences/
 ; 
 
-; Starting Jack-in Terminal: pushd d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app & cmd.exe /d /c lein update-in :dependencies conj [nrepl,"1.1.1"] -- update-in :plugins conj [cider/cider-nrepl,"0.47.1"] -- update-in [:repl-options,:nrepl-middleware] conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless & popd
-; Using host:port 127.0.0.1:52916 ...
+; Starting Jack-in Terminal: pushd d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app & cmd.exe /d /c lein update-in :dependencies conj [nrepl,"1.1.1"] -- update-in :plugins conj [cider/cider-nrepl,"0.47.1"] -- update-in [:repl-options,:nrepl-middleware] conj '["cider.nrepl/cider-middleware"]' -- repl :headless & popd
+; Jacking in...
+; Connecting using "Leiningen" project type.
+; You can make Calva auto-select this.
+;   - See https://calva.io/connect-sequences/
+; 
+
+; Using host:port 127.0.0.1:61720 ...
 ; Hooking up nREPL sessions ...
 ; Connected session: clj
 ; Evaluating code from settings: 'calva.autoEvaluateCode.onConnect.clj'
@@ -48,9 +54,152 @@ about why stdout printed to this file is prepended with `;` to be line comments.
 clj꞉pacman.core꞉> 
 ; Jack-in done.
 clj꞉pacman.core꞉> 
-#'pacman.core/move-ghost
+; Starting Jack-in Terminal: pushd d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app & cmd.exe /d /c lein update-in :dependencies conj [nrepl,"1.1.1"] -- update-in :plugins conj [cider/cider-nrepl,"0.47.1"] -- update-in [:repl-options,:nrepl-middleware] conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless & popd
+; nREPL connection failed: Error: read ECONNRESET
+; Failed connecting.
+; nREPL Connection was closed
+; Using host:port 127.0.0.1:61727 ...
+; Hooking up nREPL sessions ...
+; Connected session: clj
+; Evaluating code from settings: 'calva.autoEvaluateCode.onConnect.clj'
+nil
 clj꞉pacman.core꞉> 
-#'pacman.core/move-ghost
+; Jack-in done.
 clj꞉pacman.core꞉> 
-#'pacman.core/move-ghost
+nil
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:448:9).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+#'pacman.core/get-current-ghost-image
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+#'pacman.core/create-pacman-panel
+clj꞉pacman.core꞉> 
+#'pacman.core/create-pacman-panel
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+#'pacman.core/get-current-ghost-image
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+nil
+clj꞉pacman.core꞉> 
+#'pacman.core/create-pacman-panel
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Can't take value of a macro: #'clojure.core/let
+; 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: pacman-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Can't take value of a macro: #'clojure.core/let
+; 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:1:8667).
+; Unable to resolve symbol: pacman-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:449:9).
+; Unable to resolve symbol: ghost-image1 in this context
+clj꞉pacman.core꞉> 
+; Syntax error compiling at (d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app\src\pacman\core.clj:449:9).
+; Unable to resolve symbol: ghost-image1 in this context
 clj꞉pacman.core꞉> 
