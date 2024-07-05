@@ -1,6 +1,7 @@
 (ns pacman.core
   (:require [clojure.java.io :as io]
-            [clojure.set :refer :all])
+            [clojure.set :refer :all]
+            [clojure.string :as str])
   (:import (javax.swing JFrame JPanel Timer)
            (java.awt Color Graphics)
            (java.awt.image BufferedImage)
@@ -16,11 +17,20 @@
 
 (def direction1 (atom :right-open))
 (def direction2 (atom :left-open2))
+(def direction3 (atom :right-open3))
+(def direction4 (atom :right-open4))
 
 (def pacman1-x (atom 20))  ; Pacman 1 starts at the second cell of the second row
 (def pacman1-y (atom 20))
 (def pacman2-x (atom 720)) ; Pacman 2 starts at the second cell of the last row but one
 (def pacman2-y (atom 720))
+
+(def ghost1-x (atom 100))  ; Pacman 3 empieza en la tercera celda de la segunda fila
+(def ghost1-y (atom 40))
+(def ghost2-x (atom 200))  ; Pacman 4 empieza en la cuarta celda de la segunda fila
+(def ghost2-y (atom 50))
+
+
 
 (def move-step 8)
 (def images (atom {}))
@@ -85,17 +95,8 @@
       nil)))
 
 
-
-
-
-
-
-
 (defn draw-image [g x y sizex sizey image]
   (.drawImage g image x y sizex sizey nil))
-
-
-
 
 
 (defn get-current-image [direction]
@@ -104,7 +105,20 @@
               @direction)]
     (get @images key))) ; fallback to :closed if key not found
 
-(defn save-image [image file-path format]
+
+(defn get-current-ghost-image [direction]
+  (let [key (case direction
+                :up-open2 :up2
+                :down-open2 :down2
+                :right-open2 :right2
+                :left-open2 :left2
+                @direction)]
+      (get @images key))) ; fallback to :closed if key not found
+
+
+
+
+#_(defn save-image [image file-path format]
   (try
     (ImageIO/write image format (File. file-path))
     (println "Image saved successfully:" file-path)
@@ -113,30 +127,20 @@
       (println "Exception while saving image:" file-path (.getMessage e))
       false)))
 
-(defn draw-pacman [g x y image]
+#_(defn draw-pacman [g x y image]
   (.drawImage g image x y pacman-size pacman-size nil))
-
-(defn get-current-image [direction]
-  (let [key (if (= @angle closed-mouth)
-              (if (.endsWith (name @direction) "2") :closed2 :closed)
-              @direction)]
-    (get @images key)))
-
 
 (defn get-bombs-feature [player-id feat]
   (let [player-atom (get @players-bombs player-id)]
     (when player-atom
       (feat @player-atom))))
 
-
-
-
 (defn update-bombs-feature [player-id feat value]
   (when-let [player-atom (get @players-bombs player-id)]
     (swap! player-atom assoc feat value)))
 
 
-
+;Funciones de colision con bombas 
 (defn collision-with-explosion-enemy1 []
   (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
     (let [explosion-center-x (get-bombs-feature :pacman1 :positionx)
@@ -186,22 +190,14 @@
           distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
       (< distance (+ (/ (get-bombs-feature :pacman2 :max-explosion-size) 2) (/ pacman-size 2))))))
 
-;La parte funcional
 
-;(defn move-pacman [pacman-x pacman-y direction panel-width panel-height]
- ; (cond
-  ;  (= @direction :up-open) (swap! pacman-y #(max 0 (- % move-step)))
-    ;(= @direction :down-open) (swap! pacman-y #(min (- panel-height pacman-size) (+ % move-step)))
-   ; (= @direction :left-open) (swap! pacman-x #(max 0 (- % move-step)))
-    ;(= @direction :right-open) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))
-    ;(= @direction :up-open2) (swap! pacman-y #(max 0 (- % move-step)))
-    ;(= @direction :down-open2) (swap! pacman-y #(min (- panel-height pacman-size) (+ % move-step)))
-    ;(= @direction :left-open2) (swap! pacman-x #(max 0 (- % move-step)))
-    ;(= @direction :right-open2) (swap! pacman-x #(min (- panel-width pacman-size) (+ % move-step)))))
+
+
+
+
 
 (defn move-pacman [pacman-x pacman-y direction panel-width panel-height map-grid]
-  (let [pacman-size 20  ; Each grid cell size
-        move-step 20   ; Step size should match the grid cell size for grid alignment
+  (let [
         grid-width (count (first map-grid))  ; Total number of columns
         grid-height (count map-grid)         ; Total number of rows
 
@@ -210,13 +206,17 @@
                  :left-open (- @pacman-x move-step)
                  :right-open (+ @pacman-x move-step) 
                  :left-open2 (- @pacman-x move-step)
-                 :right-open2 (+ @pacman-x move-step)
+                 :right-open2 (+ @pacman-x move-step) 
+                 :left-open3 (- @pacman-x move-step)
+                 :right-open3 (+ @pacman-x move-step)
                  @pacman-x)
         next-y (case direction
                  :up-open (- @pacman-y move-step)
                  :down-open (+ @pacman-y move-step) 
                  :up-open2 (- @pacman-y move-step)
-                 :down-open2 (+ @pacman-y move-step)
+                 :down-open2 (+ @pacman-y move-step) 
+                 :up-open3 (- @pacman-y move-step)
+                 :down-open3 (+ @pacman-y move-step)
                  @pacman-y)
 
         ; Convert the pixel coordinates to grid coordinates
@@ -243,26 +243,48 @@
       (reset! pacman2-x 720)
       (reset! pacman2-y 720))))
 
-;ESTA ES LA LOGICA QUE FALTA TERMINAR, PARA QUE LA COLISION FUNCIONE
-;(defn move-pacman [pacman-x pacman-y direction map-grid]
-;  (let [next-x (atom @pacman-x)
-;        next-y (atom @pacman-y)]
-;    (cond
-;      (= @direction :up-open) (swap! next-y (dec @pacman-y))
-;      (= @direction :down-open) (swap! next-y (inc @pacman-y))
-;      (= @direction :left-open) (swap! next-x (dec @pacman-x))
-;      (= @direction :right-open) (swap! next-x (inc @pacman-x))
-;      (= @direction :up-open2) (swap! next-y (dec @pacman-y))
-;      (= @direction :down-open2) (swap! next-y (inc @pacman-y))
-;      (= @direction :left-open2) (swap! next-x (dec @pacman-x))
-;      (= @direction :right-open2) (swap! next-x (inc @pacman-x)));
 
-    ; Ensure the movement is within the grid bounds
-;    (when (and (>= @next-x 0) (< @next-x (count (first map-grid)))
-;               (>= @next-y 0) (< @next-y (count map-grid))
-;               (= (get-in map-grid [@next-y @next-x]) 0))
-;      (swap! pacman-x @next-x)
-;      (swap! pacman-y @next-y))))
+
+
+
+(defn move-ghost-auto [ghost-x ghost-y direction panel-width panel-height map-grid]
+  (let [grid-width (count (first map-grid))  ; Total number of columns
+        grid-height (count map-grid)         ; Total number of rows
+        move-step 10                          ; Asume un paso de movimiento de 1 unidad
+
+        ; Define la dirección en la que quieres que se mueva automáticamente
+        auto-direction :right  ; Por ejemplo, moviéndose automáticamente hacia la derecha
+
+        ; Calculate the next position based on the auto-direction
+        next-x (case auto-direction
+                 :left (- @ghost-x move-step)
+                 :right (+ @ghost-x move-step)
+                 :up @ghost-x  ; Mantener la posición actual si es dirección hacia arriba
+                 :down @ghost-x ; Mantener la posición actual si es dirección hacia abajo
+                 @ghost-x)  ; Mantener la posición actual por defecto
+        next-y (case auto-direction
+                 :up (- @ghost-y move-step)
+                 :down (+ @ghost-y move-step)
+                 :left @ghost-y  ; Mantener la posición actual si es dirección hacia la izquierda
+                 :right @ghost-y  ; Mantener la posición actual si es dirección hacia la derecha
+                 @ghost-y)  ; Mantener la posición actual por defecto
+
+        ; Convert the pixel coordinates to grid coordinates
+        grid-x (int (/ next-x pacman-size))
+        grid-y (int (/ next-y pacman-size))]
+
+    ; Check if the next position is within grid bounds and is not a wall
+    (when (and (>= grid-x 0) (< grid-x grid-width)
+               (>= grid-y 0) (< grid-y grid-height)
+               (= (get-in map-grid [grid-y grid-x]) 0))
+      (reset! ghost-x next-x)
+      (reset! ghost-y next-y))))
+
+
+
+
+
+
 
 (defn draw-map [g]
   (doseq [y (range (count map-grid))
@@ -272,6 +294,7 @@
         (.setColor g Color/GRAY)
         (.fillRect g (* x pacman-size) (* y pacman-size) pacman-size pacman-size)))))
 
+
 (defn create-pacman-panel []
   (proxy [JPanel ActionListener KeyListener] []
     (keyPressed [e]
@@ -280,10 +303,12 @@
         (= (.getKeyCode e) KeyEvent/VK_S) (reset! direction1 :down-open)
         (= (.getKeyCode e) KeyEvent/VK_D) (reset! direction1 :right-open)
         (= (.getKeyCode e) KeyEvent/VK_A) (reset! direction1 :left-open)
+
         (= (.getKeyCode e) KeyEvent/VK_UP) (reset! direction2 :up-open2)
         (= (.getKeyCode e) KeyEvent/VK_DOWN) (reset! direction2 :down-open2)
         (= (.getKeyCode e) KeyEvent/VK_RIGHT) (reset! direction2 :right-open2)
-        (= (.getKeyCode e) KeyEvent/VK_LEFT) (reset! direction2 :left-open2)
+        (= (.getKeyCode e) KeyEvent/VK_LEFT) (reset! direction2 :left-open2) 
+        
         (and (= (.getKeyCode e) KeyEvent/VK_SPACE) (= (get-bombs-feature :pacman1 :visible) false))
         (do
           (update-bombs-feature :pacman1 :positionx @pacman1-x)
@@ -309,19 +334,32 @@
       (draw-map g)
       (let [pacman-image1 (get-current-image direction1)
             pacman-image2 (get-current-image direction2)
+            ghost-image1 (get-current-ghost-image direction3)
+            ghost-image2 (get-current-ghost-image direction4)
             bomb-image (get @images :bomb)]
+        
         (when pacman-image1
           (draw-image g @pacman1-x @pacman1-y pacman-size pacman-size pacman-image1)
           (let [bomb-exist (get @players-bombs :pacman1)]
             (when (= bomb-exist nil)
               (add-bomb-to-player :pacman1)
               (update-bombs-feature :pacman1 :image bomb-image))))
+        
         (when pacman-image2
           (draw-image g @pacman2-x @pacman2-y pacman-size pacman-size pacman-image2)
           (let [bomb-exist (get @players-bombs :pacman2)]
             (when (= bomb-exist nil)
               (add-bomb-to-player :pacman2)
-              (update-bombs-feature :pacman2 :image bomb-image))))
+              (update-bombs-feature :pacman2 :image bomb-image)))) 
+        
+         (when ghost-image1
+          (draw-image g @ghost1-x @ghost1-y pacman-size pacman-size ghost-image1))
+        
+         (when ghost-image2
+          (draw-image g @ghost2-x @ghost2-y pacman-size pacman-size ghost-image2))
+           
+
+
         (when (= (get-bombs-feature :pacman1 :visible) true)
           (draw-image g (get-bombs-feature :pacman1 :positionx) (get-bombs-feature :pacman1 :positiony) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :size) (get-bombs-feature :pacman1 :image)))
         (when (= (get-bombs-feature :pacman2 :visible) true)
@@ -346,6 +384,9 @@
                        (- explosion-y (/ current-explosion-size 2))
                        current-explosion-size current-explosion-size)
             (update-bombs-feature :pacman2 :explosion-time nil)))
+        
+
+
         (when (collision-with-explosion-enemy1)
           (reset! pacman2-x 720)
           (reset! pacman2-y 720))
@@ -359,11 +400,18 @@
           (reset! pacman2-x 720)
           (reset! pacman2-y 720))))))
 
+
+
+
+
+
 (defn create-window []
   (let [frame (JFrame. "Pacman")
         panel (create-pacman-panel)
         timer (Timer. 100 (reify ActionListener
-                            (actionPerformed [_ _]
+                            (actionPerformed [_ _] 
+                              (move-ghost-auto ghost2-x ghost2-y @direction4 800 800 map-grid)                              
+                              (move-ghost-auto ghost1-x ghost1-y @direction3 800 800 map-grid)                              
                               (move-pacman pacman2-x pacman2-y @direction2 800 800 map-grid)
                               (move-pacman pacman1-x pacman1-y @direction1 800 800 map-grid)
                               (swap! angle #(if (= % closed-mouth) open-mouth closed-mouth))
@@ -389,7 +437,12 @@
                   :up-open2 (load-image "resources/imgs/pacman2-up-open.png")
                   :down-open2 (load-image "resources/imgs/pacman2-down-open.png")
                   :left-open2 (load-image "resources/imgs/pacman2-left-open.png")
-                  :right-open2 (load-image "resources/imgs/pacman2-right-open.png")
+                  :right-open2 (load-image "resources/imgs/pacman2-right-open.png") 
+
+                  :up-open3 (load-image "resources/imgs/fantasma1-left.png")
+                  :down-open3 (load-image "resources/imgs/fantasma1-left.png")
+                  :left-open3 (load-image "resources/imgs/fantasma1-left.png")
+                  :right-open3 (load-image "resources/imgs/fantasma1-left.png")
                   :bomb (load-image "resources/imgs/Bomba.png")})
   (println "Images loaded:" @images)
   (doseq [[key image] @images]
