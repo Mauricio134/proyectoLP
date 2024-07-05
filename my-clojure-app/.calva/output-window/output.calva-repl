@@ -36,4 +36,21 @@ You can configure this with the setting:
 ;   - See https://calva.io/connect-sequences/
 ; 
 
-; Starting Jack-in Terminal: (cd /Users/mauricioapaza/Desktop/LP_Proyecto/my-clojure-app; lein update-in :dependencies conj '[nrepl,"1.1.1"]' -- update-in :plugins conj '[cider/cider-nrepl,"0.47.1"]' -- update-in '[:repl-options,:nrepl-middleware]' conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless)
+; Starting Jack-in Terminal: pushd d:\Universidad\Documentos\LP\proyectoLP\my-clojure-app & cmd.exe /d /c lein update-in :dependencies conj [nrepl,"1.1.1"] -- update-in :plugins conj [cider/cider-nrepl,"0.47.1"] -- update-in [:repl-options,:nrepl-middleware] conj '["cider.nrepl/cider-middleware"]' -- with-profile +uberjar repl :headless & popd
+; Using host:port 127.0.0.1:52916 ...
+; Hooking up nREPL sessions ...
+; Connected session: clj
+; Evaluating code from settings: 'calva.autoEvaluateCode.onConnect.clj'
+nil
+clj꞉pacman.core꞉> 
+"Please see https://calva.io/output/#about-stdout-in-the-repl-window
+about why stdout printed to this file is prepended with `;` to be line comments."
+clj꞉pacman.core꞉> 
+; Jack-in done.
+clj꞉pacman.core꞉> 
+#'pacman.core/move-ghost
+clj꞉pacman.core꞉> 
+#'pacman.core/move-ghost
+clj꞉pacman.core꞉> 
+#'pacman.core/move-ghost
+clj꞉pacman.core꞉> 
