@@ -34,6 +34,13 @@
 (def move-step 20)
 (def images (atom {}))
 
+(def vida-pacman1 (atom 3))  ; Átomo para la vida de pacman1 con valor inicial 3
+(def vida-pacman2 (atom 3))  ; Átomo para la vida de pacman2 con valor inicial 3
+
+(defn restar-vida [pacman nombre]
+  (swap! pacman dec)  ; Restar 1 a la vida del pacman
+  (println (str "Se resto una vida a " nombre ". Vidas restantes: " @pacman)))
+
 
 (def map-grid
   [[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
@@ -238,28 +245,36 @@
 
     (when (collision-with-explosion-enemy1)
       (reset! pacman2-x 720)
-      (reset! pacman2-y 720))
+      (reset! pacman2-y 720)
+      (restar-vida vida-pacman2 "pacman2"))
     (when (collision-with-explosion-own1)
       (reset! pacman1-x 20)
-      (reset! pacman1-y 20))
+      (reset! pacman1-y 20)
+      (restar-vida vida-pacman1 "pacman1"))
     (when (collision-with-explosion-enemy2)
       (reset! pacman1-x 20)
-      (reset! pacman1-y 20))
+      (reset! pacman1-y 20)
+      (restar-vida vida-pacman1 "pacman1"))
     (when (collision-with-explosion-own2)
       (reset! pacman2-x 720)
-      (reset! pacman2-y 720))
+      (reset! pacman2-y 720)
+      (restar-vida vida-pacman2 "pacman2"))
     (when (collision-with-explosion-ghost1-pacman1)
       (reset! pacman1-x 20)
-      (reset! pacman1-y 20))
+      (reset! pacman1-y 20)
+      (restar-vida vida-pacman1 "pacman1"))
     (when (collision-with-explosion-ghost1-pacman2)
       (reset! pacman2-x 720)
-      (reset! pacman2-y 720))
+      (reset! pacman2-y 720)
+      (restar-vida vida-pacman2 "pacman2"))
     (when (collision-with-explosion-ghost2-pacman1)
       (reset! pacman1-x 20)
-      (reset! pacman1-y 20))
+      (reset! pacman1-y 20)
+      (restar-vida vida-pacman1 "pacman1"))
     (when (collision-with-explosion-ghost2-pacman2)
       (reset! pacman2-x 720)
-      (reset! pacman2-y 720))))
+      (reset! pacman2-y 720)
+      (restar-vida vida-pacman2 "pacman2"))))
 
 
 (defn valid-position? [x y grid-width grid-height map-grid]
@@ -404,33 +419,7 @@
                 (.fillOval g (- explosion-x (/ current-explosion-size 2))
                            (- explosion-y (/ current-explosion-size 2))
                            current-explosion-size current-explosion-size)
-                (swap! ghost-bombs assoc-in [ghost :explosion-time] nil)))))
-
-        ;; Verificar Colisiones
-        (when (collision-with-explosion-enemy1)
-          (reset! pacman2-x 720)
-          (reset! pacman2-y 720))
-        (when (collision-with-explosion-own1)
-          (reset! pacman1-x 20)
-          (reset! pacman1-y 20))
-        (when (collision-with-explosion-enemy2)
-          (reset! pacman1-x 20)
-          (reset! pacman1-y 20))
-        (when (collision-with-explosion-own2)
-          (reset! pacman2-x 720)
-          (reset! pacman2-y 720))
-        (when (collision-with-explosion-ghost1-pacman1)
-          (reset! pacman1-x 20)
-          (reset! pacman1-y 20))
-        (when (collision-with-explosion-ghost1-pacman2)
-          (reset! pacman2-x 720)
-          (reset! pacman2-y 720))
-        (when (collision-with-explosion-ghost2-pacman1)
-          (reset! pacman1-x 20)
-          (reset! pacman1-y 20))
-        (when (collision-with-explosion-ghost2-pacman2)
-          (reset! pacman2-x 720)
-          (reset! pacman2-y 720))))))
+                (swap! ghost-bombs assoc-in [ghost :explosion-time] nil)))))))))
 
 
 (schedule-ghost-bombs)
