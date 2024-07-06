@@ -31,10 +31,9 @@
 (def ghost2-x (atom 400))  ; ghost 2 empieza en la cuarta celda de la segunda fila
 (def ghost2-y (atom 400))
 
-
-
 (def move-step 20)
 (def images (atom {}))
+
 
 (def map-grid
   [[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
@@ -77,37 +76,7 @@
    [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
    [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]])
 
-(def bomb-config {:size 20 :positionx 200 :positiony 200 :visible false :explosion-time nil :max-explosion-size 150 :image nil})
-
-
-(def ghost-bombs (atom {:ghost1 {:positionx 0 :positiony 0 :visible false :explosion-time nil :size 20 :max-explosion-size 150}
-                        :ghost2 {:positionx 0 :positiony 0 :visible false :explosion-time nil :size 20 :max-explosion-size 150}}))
-
-(defn update-ghost-bombs [ghost]
-  (let [ghost-pos (if (= ghost :ghost1) {:x @ghost1-x :y @ghost1-y} {:x @ghost2-x :y @ghost2-y})
-        bomb (get @ghost-bombs ghost)]
-    (when (not (:visible bomb))
-      (swap! ghost-bombs assoc-in [ghost :positionx] (:x ghost-pos))
-      (swap! ghost-bombs assoc-in [ghost :positiony] (:y ghost-pos))
-      (swap! ghost-bombs assoc-in [ghost :visible] true)
-      (future
-        (Thread/sleep 2000)
-        (swap! ghost-bombs assoc-in [ghost :visible] false)
-        (swap! ghost-bombs assoc-in [ghost :explosion-time] 10000)))))
-
-(defn schedule-ghost-bombs []
-  (future
-    (loop []
-      (update-ghost-bombs :ghost1)
-      (update-ghost-bombs :ghost2)
-      (Thread/sleep 3000)
-      (recur))))
-
-
-(def players-bombs (atom {:pacman1 nil :pacman2 nil :blinky nil :pinky nil :inky nil :clyde nil}))
-
-(defn add-bomb-to-player [id]
-  (swap! players-bombs assoc id (atom bomb-config)))
+;Funciones para cargar las imagenes
 
 (defn load-image [file-path]
   (try
@@ -141,111 +110,92 @@
               :closed)]
     (get @images key)))
 
+;Funciones para las bombas
+
+(def bomb-config {:size 20 :positionx 200 :positiony 200 :visible false :explosion-time nil :max-explosion-size 150 :image nil})
+
+
+(def ghost-bombs (atom {:ghost1 {:positionx 0 :positiony 0 :visible false :explosion-time nil :size 20 :max-explosion-size 150}
+                        :ghost2 {:positionx 0 :positiony 0 :visible false :explosion-time nil :size 20 :max-explosion-size 150}}))
+
+(defn update-ghost-bombs [ghost]
+  (let [ghost-pos (if (= ghost :ghost1) {:x @ghost1-x :y @ghost1-y} {:x @ghost2-x :y @ghost2-y})
+        bomb (get @ghost-bombs ghost)]
+    (when (not (:visible bomb))
+      (swap! ghost-bombs assoc-in [ghost :positionx] (:x ghost-pos))
+      (swap! ghost-bombs assoc-in [ghost :positiony] (:y ghost-pos))
+      (swap! ghost-bombs assoc-in [ghost :visible] true)
+      (future
+        (Thread/sleep 2000)
+        (swap! ghost-bombs assoc-in [ghost :visible] false)
+        (swap! ghost-bombs assoc-in [ghost :explosion-time] 10000)))))
+
+(defn schedule-ghost-bombs []
+  (future
+    (loop []
+      (update-ghost-bombs :ghost1)
+      (update-ghost-bombs :ghost2)
+      (Thread/sleep 3000)
+      (recur))))
+
+(def players-bombs (atom {:pacman1 nil :pacman2 nil :blinky nil :pinky nil :inky nil :clyde nil}))
+
+(defn add-bomb-to-player [id]
+  (swap! players-bombs assoc id (atom bomb-config)))
 
 (defn get-bombs-feature [player-id feat]
   (let [player-atom (get @players-bombs player-id)]
     (when player-atom
       (feat @player-atom))))
 
+(defn get-ghost-bombs-feature [ghost-id feat]
+  (let [ghost-bomb (get @ghost-bombs ghost-id)]
+    (when ghost-bomb
+      (feat ghost-bomb))))
+
 (defn update-bombs-feature [player-id feat value]
   (when-let [player-atom (get @players-bombs player-id)]
     (swap! player-atom assoc feat value)))
 
 
-;Funciones de colision con bombas 
-(defn collision-with-explosion-enemy1 []
-  (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :pacman1 :positionx)
-          explosion-center-y (get-bombs-feature :pacman1 :positiony)
-          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :pacman1 :max-explosion-size) 2) (/ pacman-size 2))))))
 
+;Colision entre explosiones simplificado
+(defn collision-with-explosion [bomb-id pacman-x pacman-y pacman-size bomb-type]
+  (let [bomb-feature-fn (if (= bomb-type :player) get-bombs-feature get-ghost-bombs-feature)]
+    (when (and (not (nil? (bomb-feature-fn bomb-id :explosion-time)))
+               (not (true? (bomb-feature-fn bomb-id :visible))))
+      (let [explosion-center-x (bomb-feature-fn bomb-id :positionx)
+            explosion-center-y (bomb-feature-fn bomb-id :positiony)
+            pacman-center-x (+ pacman-x (/ pacman-size 2))
+            pacman-center-y (+ pacman-y (/ pacman-size 2))
+            dx (- explosion-center-x pacman-center-x)
+            dy (- explosion-center-y pacman-center-y)
+            distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
+        (< distance (+ (/ (bomb-feature-fn bomb-id :max-explosion-size) 2) (/ pacman-size 2)))))))
+
+(defn collision-with-explosion-enemy1 []
+  (collision-with-explosion :pacman1 @pacman2-x @pacman2-y pacman-size :player))
 
 (defn collision-with-explosion-own1 []
-  (when (and (not (= (get-bombs-feature :pacman1 :explosion-time) nil)) (not (= (get-bombs-feature :pacman1 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :pacman1 :positionx)
-          explosion-center-y (get-bombs-feature :pacman1 :positiony)
-          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :pacman1 :max-explosion-size) 2) (/ pacman-size 2))))))
-
-
+  (collision-with-explosion :pacman1 @pacman1-x @pacman1-y pacman-size :player))
 
 (defn collision-with-explosion-enemy2 []
-  (when (and (not (= (get-bombs-feature :pacman2 :explosion-time) nil)) (not (= (get-bombs-feature :pacman2 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :pacman2 :positionx)
-          explosion-center-y (get-bombs-feature :pacman2 :positiony)
-          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :pacman2 :max-explosion-size) 2) (/ pacman-size 2))))))
-
-
+  (collision-with-explosion :pacman2 @pacman1-x @pacman1-y pacman-size :player))
 
 (defn collision-with-explosion-own2 []
-  (when (and (not (= (get-bombs-feature :pacman2 :explosion-time) nil)) (not (= (get-bombs-feature :pacman2 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :pacman2 :positionx)
-          explosion-center-y (get-bombs-feature :pacman2 :positiony)
-          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :pacman2 :max-explosion-size) 2) (/ pacman-size 2))))))
+  (collision-with-explosion :pacman2 @pacman2-x @pacman2-y pacman-size :player))
 
 (defn collision-with-explosion-ghost1-pacman1 []
-  (when (and (not (= (get-bombs-feature :ghost1 :explosion-time) nil)) (not (= (get-bombs-feature :ghost1 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :ghost1 :positionx)
-          explosion-center-y (get-bombs-feature :ghost1 :positiony)
-          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :ghost1 :max-explosion-size) 2) (/ pacman-size 2))))))
+  (collision-with-explosion :ghost1 @pacman1-x @pacman1-y pacman-size :ghost))
 
 (defn collision-with-explosion-ghost1-pacman2 []
-  (when (and (not (= (get-bombs-feature :ghost1 :explosion-time) nil)) (not (= (get-bombs-feature :ghost1 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :ghost1 :positionx)
-          explosion-center-y (get-bombs-feature :ghost1 :positiony)
-          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :ghost1 :max-explosion-size) 2) (/ pacman-size 2))))))
+  (collision-with-explosion :ghost1 @pacman2-x @pacman2-y pacman-size :ghost))
 
 (defn collision-with-explosion-ghost2-pacman1 []
-  (when (and (not (= (get-bombs-feature :ghost2 :explosion-time) nil)) (not (= (get-bombs-feature :ghost2 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :ghost2 :positionx)
-          explosion-center-y (get-bombs-feature :ghost2 :positiony)
-          pacman-center-x (+ @pacman1-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman1-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :ghost2 :max-explosion-size) 2) (/ pacman-size 2))))))
+  (collision-with-explosion :ghost2 @pacman1-x @pacman1-y pacman-size :ghost))
 
 (defn collision-with-explosion-ghost2-pacman2 []
-  (when (and (not (= (get-bombs-feature :ghost2 :explosion-time) nil)) (not (= (get-bombs-feature :ghost2 :visible) true)))
-    (let [explosion-center-x (get-bombs-feature :ghost2 :positionx)
-          explosion-center-y (get-bombs-feature :ghost2 :positiony)
-          pacman-center-x (+ @pacman2-x (/ pacman-size 2))
-          pacman-center-y (+ @pacman2-y (/ pacman-size 2))
-          dx (- explosion-center-x pacman-center-x)
-          dy (- explosion-center-y pacman-center-y)
-          distance (Math/sqrt (+ (* dx dx) (* dy dy)))]
-      (< distance (+ (/ (get-bombs-feature :ghost2 :max-explosion-size) 2) (/ pacman-size 2))))))
-
+  (collision-with-explosion :ghost2 @pacman2-x @pacman2-y pacman-size :ghost))
 
 
 
