@@ -272,7 +272,7 @@
         grid-height (count map-grid)           ; Total number of rows
         move-step 20                           ; Assume a move step of 20 units
         directions [:right :down :left :up]    ; Possible directions
-        current-dir-index (atom (.indexOf directions @direction))] ; Current direction index
+        current-dir-index (rand-int (count directions))] ; Current direction index
 
     (loop [attempts 0]
       (let [next-x (case @direction
@@ -293,10 +293,9 @@
             (reset! ghost-x next-x)
             (reset! ghost-y next-y))
           (when (< attempts 4)
-            ;; Change direction if the move is invalid
-            (swap! current-dir-index #(mod (inc %) (count directions)))
-            (reset! direction (nth directions @current-dir-index))
-            (recur (inc attempts))))))))
+                      ;; Cambia la dirección del movimiento a una aleatoria
+                (reset! direction (nth directions current-dir-index))
+                (recur (inc attempts))))))))
 
 
 
