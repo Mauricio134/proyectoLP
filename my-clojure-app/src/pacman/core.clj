@@ -464,13 +464,13 @@
     (.requestFocus panel)
 
     ;; Configurar el label de vida de Pacman1
-    (.setBounds vida-label 10 10 150 20)  ; Posición y tamaño del label
+    (.setBounds vida-label 320 10 150 20)  ; Posición y tamaño del label
     (.setFont vida-label (Font. "Arial" Font/PLAIN 12))
-    (.setForeground vida-label Color/YELLOW)
+    (.setForeground vida-label Color/GREEN)
     (.add panel vida-label)
 
     ;; Configurar el label de vida de Pacman2
-    (.setBounds vida-label2 10 40 150 20)  ; Posición y tamaño del label
+    (.setBounds vida-label2 420 10 150 20)  ; Posición y tamaño del label
     (.setFont vida-label2 (Font. "Arial" Font/PLAIN 12))
     (.setForeground vida-label2 Color/YELLOW)
     (.add panel vida-label2)
