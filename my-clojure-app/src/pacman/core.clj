@@ -37,15 +37,21 @@
 (def vida-pacman1 (atom 3))  ; Átomo para la vida de pacman1 con valor inicial 3
 (def vida-pacman2 (atom 3))  ; Átomo para la vida de pacman2 con valor inicial 3
 
+(defn cerrar-juego []
+  (println "El juego ha terminado.")
+  (System/exit 0))
+
+
 ;; Función para actualizar dinámicamente el label de vida de un Pacman
 (defn update-vida-label [label vida]
   (.setText label (str "Vidas restantes: " @vida)))
 
-;; Función para restar una vida a un Pacman específico
 (defn restar-vida [pacman nombre vida-label]
   (swap! pacman dec)  ; Restar 1 a la vida del Pacman
   (println (str "Se restó una vida a " nombre ". Vidas restantes: " @pacman))
-  (update-vida-label vida-label pacman))  ; Actualizar el label de vida correspondiente
+  (update-vida-label vida-label pacman)  ; Actualizar el label de vida correspondiente
+  (when (<= @pacman 0)
+    (cerrar-juego)))  ; Cerrar el juego si la vida llega a cero
 
 
 
