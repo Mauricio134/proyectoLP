@@ -3,8 +3,8 @@
   (:require [clojure.java.io :as io]
             [clojure.set :refer :all]
             [clojure.string :as str])
-  (:import (javax.swing JFrame JPanel Timer)
-           (java.awt Color Graphics)
+  (:import (javax.swing JFrame JPanel Timer JLabel)
+           (java.awt Color Graphics Font)
            (java.awt.image BufferedImage)
            (java.awt.event ActionListener KeyEvent KeyListener)
            (javax.imageio ImageIO)
@@ -37,9 +37,19 @@
 (def vida-pacman1 (atom 3))  ; Átomo para la vida de pacman1 con valor inicial 3
 (def vida-pacman2 (atom 3))  ; Átomo para la vida de pacman2 con valor inicial 3
 
-(defn restar-vida [pacman nombre]
-  (swap! pacman dec)  ; Restar 1 a la vida del pacman
-  (println (str "Se resto una vida a " nombre ". Vidas restantes: " @pacman)))
+;; Función para actualizar dinámicamente el label de vida de un Pacman
+(defn update-vida-label [label vida]
+  (.setText label (str "Vidas restantes: " @vida)))
+
+;; Función para restar una vida a un Pacman específico
+(defn restar-vida [pacman nombre vida-label]
+  (swap! pacman dec)  ; Restar 1 a la vida del Pacman
+  (println (str "Se restó una vida a " nombre ". Vidas restantes: " @pacman))
+  (update-vida-label vida-label pacman))  ; Actualizar el label de vida correspondiente
+
+
+
+
 
 
 (def map-grid
@@ -210,7 +220,7 @@
 
 
 
-(defn move-pacman [pacman-x pacman-y direction panel-width panel-height map-grid]
+(defn move-pacman [pacman-x pacman-y direction panel-width panel-height map-grid vida-label]
   (let [grid-width (count (first map-grid))  ; Total number of columns
         grid-height (count map-grid)         ; Total number of rows
 
@@ -243,39 +253,39 @@
       (reset! pacman-x next-x)
       (reset! pacman-y next-y))
 
+    ; Handle collisions and update vida-label dynamically
     (when (collision-with-explosion-enemy1)
       (reset! pacman2-x 720)
       (reset! pacman2-y 720)
-      (restar-vida vida-pacman2 "pacman2"))
+      (restar-vida vida-pacman2 "pacman2" vida-label))
     (when (collision-with-explosion-own1)
       (reset! pacman1-x 20)
       (reset! pacman1-y 20)
-      (restar-vida vida-pacman1 "pacman1"))
+      (restar-vida vida-pacman1 "pacman1" vida-label))
     (when (collision-with-explosion-enemy2)
       (reset! pacman1-x 20)
       (reset! pacman1-y 20)
-      (restar-vida vida-pacman1 "pacman1"))
+      (restar-vida vida-pacman1 "pacman1" vida-label))
     (when (collision-with-explosion-own2)
       (reset! pacman2-x 720)
       (reset! pacman2-y 720)
-      (restar-vida vida-pacman2 "pacman2"))
+      (restar-vida vida-pacman2 "pacman2" vida-label))
     (when (collision-with-explosion-ghost1-pacman1)
       (reset! pacman1-x 20)
       (reset! pacman1-y 20)
-      (restar-vida vida-pacman1 "pacman1"))
+      (restar-vida vida-pacman1 "pacman1" vida-label))
     (when (collision-with-explosion-ghost1-pacman2)
       (reset! pacman2-x 720)
       (reset! pacman2-y 720)
-      (restar-vida vida-pacman2 "pacman2"))
+      (restar-vida vida-pacman2 "pacman2" vida-label))
     (when (collision-with-explosion-ghost2-pacman1)
       (reset! pacman1-x 20)
       (reset! pacman1-y 20)
-      (restar-vida vida-pacman1 "pacman1"))
+      (restar-vida vida-pacman1 "pacman1" vida-label))
     (when (collision-with-explosion-ghost2-pacman2)
       (reset! pacman2-x 720)
       (reset! pacman2-y 720)
-      (restar-vida vida-pacman2 "pacman2"))))
-
+      (restar-vida vida-pacman2 "pacman2" vida-label))))
 
 (defn valid-position? [x y grid-width grid-height map-grid]
   (and (>= x 0) (< x grid-width)
@@ -426,28 +436,49 @@
 
 
 
-
 (defn create-window []
   (let [frame (JFrame. "Pacman")
         panel (create-pacman-panel)
+        vida-label (JLabel. (str "Vidas Pacman1: " @vida-pacman1))  ; Label de vida inicial de Pacman1
+        vida-label2 (JLabel. (str "Vidas Pacman2: " @vida-pacman2))  ; Label de vida inicial de Pacman2
+
         timer (Timer. 100 (reify ActionListener
                             (actionPerformed [_ _]
                               (move-ghost-auto ghost2-x ghost2-y direction4 800 800 map-grid)
                               (move-ghost-auto ghost1-x ghost1-y direction3 800 800 map-grid)
-                              (move-pacman pacman2-x pacman2-y @direction2 800 800 map-grid)
-                              (move-pacman pacman1-x pacman1-y @direction1 800 800 map-grid)
+                              (move-pacman pacman2-x pacman2-y @direction2 800 800 map-grid vida-label2)  ; Actualiza vida de Pacman2
+                              (move-pacman pacman1-x pacman1-y @direction1 800 800 map-grid vida-label)  ; Actualiza vida de Pacman1
                               (swap! angle #(if (= % closed-mouth) open-mouth closed-mouth))
-                              (.repaint panel))))]
+                              (.repaint panel)
+                              (.setText vida-label (str "Vidas Pacman1: " @vida-pacman1))  ; Actualiza texto del label de Pacman1
+                              (.setText vida-label2 (str "Vidas Pacman2: " @vida-pacman2))  ; Actualiza texto del label de Pacman2
+                              )))]
     (doto frame
       (.setSize 800 800)
       (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
       (.add panel)
       (.setVisible true))
+
     (.setBackground panel Color/BLACK)
-    (.start timer)
     (.addKeyListener panel panel)
     (.requestFocus panel)
-    frame))
+
+    ;; Configurar el label de vida de Pacman1
+    (.setBounds vida-label 10 10 150 20)  ; Posición y tamaño del label
+    (.setFont vida-label (Font. "Arial" Font/PLAIN 12))
+    (.setForeground vida-label Color/YELLOW)
+    (.add panel vida-label)
+
+    ;; Configurar el label de vida de Pacman2
+    (.setBounds vida-label2 10 40 150 20)  ; Posición y tamaño del label
+    (.setFont vida-label2 (Font. "Arial" Font/PLAIN 12))
+    (.setForeground vida-label2 Color/YELLOW)
+    (.add panel vida-label2)
+
+    (.start timer)  ; Iniciar el timer para la lógica del juego
+
+    frame))  ; Retornar el frame creado
+
 
 (defn load-images []
   (reset! images {:closed (load-image "resources/imgs/pacman-closed.png")
