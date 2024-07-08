@@ -3,8 +3,8 @@
   (:require [clojure.java.io :as io]
             [clojure.set :refer :all]
             [clojure.string :as str])
-  (:import (javax.swing JFrame JPanel Timer JLabel)
-           (java.awt Color Graphics Font)
+  (:import (javax.swing JFrame JPanel Timer JLabel ImageIcon JOptionPane)
+           (java.awt Color Graphics Font Image)
            (java.awt.image BufferedImage)
            (java.awt.event ActionListener KeyEvent KeyListener)
            (javax.imageio ImageIO)
@@ -21,15 +21,18 @@
 (def direction3 (atom :right))
 (def direction4 (atom :left))
 
-(def pacman1-x (atom 20))  ; Pacman 1 starts at the second cell of the second row
+(def pacman1-x (atom 20))  
 (def pacman1-y (atom 20))
-(def pacman2-x (atom 720)) ; Pacman 2 starts at the second cell of the last row but one
+(def pacman2-x (atom 720))
 (def pacman2-y (atom 720))
 
-(def ghost1-x (atom 400))  ; ghost 1 empieza en la tercera celda de la segunda fila
-(def ghost1-y (atom 400))
-(def ghost2-x (atom 400))  ; ghost 2 empieza en la cuarta celda de la segunda fila
-(def ghost2-y (atom 400))
+(def ghost1-x (atom 380))  
+(def ghost1-y (atom 260))
+(def ghost2-x (atom 380))  
+(def ghost2-y (atom 520))
+
+(def score-pacman1 (atom 0))
+(def score-pacman2 (atom 0))
 
 (def move-step 20)
 (def images (atom {}))
@@ -37,67 +40,93 @@
 (def vida-pacman1 (atom 3))  ; Átomo para la vida de pacman1 con valor inicial 3
 (def vida-pacman2 (atom 3))  ; Átomo para la vida de pacman2 con valor inicial 3
 
+
 (defn cerrar-juego []
-  (println "El juego ha terminado.")
-  (System/exit 0))
+  (let [frame (JFrame. "Fin del Juego")
+        opciones (into-array ["Reiniciar" "Salir"]) ; Convertir opciones a un array
+        respuesta (JOptionPane/showOptionDialog
+                    frame
+                    "¿Quieres jugar otra partida?"
+                    "Juego Terminado"
+                    JOptionPane/YES_NO_OPTION
+                    JOptionPane/QUESTION_MESSAGE
+                    nil
+                    opciones
+                    (aget opciones 0))] ; El último argumento debe ser el valor inicial, aquí parece estar el error
+    
+    (cond
+      (= respuesta 0)
+      (do
+        (reset! vida-pacman1 3)
+        (reset! vida-pacman2 3)
+        (reset! pacman1-x 20)
+        (reset! pacman1-y 20)
+        (reset! pacman2-x 720)
+        (reset! pacman2-y 720)
+        (reset! ghost1-x 380)
+        (reset! ghost1-y 260)
+        (reset! ghost2-x 380)
+        (reset! ghost2-y 520))
+
+      (= respuesta 1)
+      (do
+        (println "El juego ha terminado.")
+        (System/exit 0)))))
 
 
-;; Función para actualizar dinámicamente el label de vida de un Pacman
-(defn update-vida-label [label vida]
-  (.setText label (str "Vidas restantes: " @vida)))
+
 
 (defn restar-vida [pacman nombre vida-label]
   (swap! pacman dec)  ; Restar 1 a la vida del Pacman
   (println (str "Se restó una vida a " nombre ". Vidas restantes: " @pacman))
-  (update-vida-label vida-label pacman)  ; Actualizar el label de vida correspondiente
   (when (<= @pacman 0)
+    (cond
+      (= nombre "pacman1") (swap! score-pacman2 inc)  ; Aumentar puntaje de Pacman 2
+      (= nombre "pacman2") (swap! score-pacman1 inc))
     (cerrar-juego)))  ; Cerrar el juego si la vida llega a cero
-
-
-
 
 
 
 (def map-grid
   [[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 0 0 1 1 1 0 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 0 0 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 0 1]
-   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]
-   [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 1 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 0 1 0 1 1 0 1 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 1 1 1 0 1 1 0 1 1 0 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 1 1 0 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 1 1]
+   [1 1 1 1 1 0 1 1 0 1 1 1 1 0 1 1 1 0 0 0 0 0 1 1 1 0 1 1 1 1 0 1 1 0 1 1 1 1 1 1];;
+   [1 1 1 1 1 0 1 1 0 1 1 1 1 0 1 1 0 0 0 0 0 0 0 1 1 0 1 1 1 1 0 1 1 0 1 1 1 1 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1];;
+   [1 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 1 1]
+   [1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1];;
+   [1 1 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 1 1 1]
+   [1 0 0 1 1 1 1 1 1 0 1 0 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 1 0 1 1 1 1 1 1 0 0 1 1]
+   [1 0 1 1 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 0 0 0 0 1 1]
+   [1 1 1 0 1 0 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 1 1 1 1 1 1];;
+   [1 1 1 0 1 0 1 1 1 0 0 0 0 0 0 0 1 0 1 1 1 0 1 0 0 0 0 0 0 0 1 1 1 0 1 1 1 1 1 1] ;;
+   [1 0 0 0 0 0 1 1 1 0 1 1 1 0 1 0 1 0 1 1 1 0 1 0 1 0 1 1 1 0 1 1 1 0 0 0 0 0 1 1]
+   [1 0 1 1 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 1 1 1 0 1 1]
+   [1 0 0 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 0 0 1 1]
+   [1 1 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 1 1]
+   [1 1 0 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1] ;;
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1]
+   [1 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 1 1]
+   [1 1 1 1 1 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1]
+   [1 1 1 1 1 0 1 1 0 1 1 1 1 0 1 1 0 0 0 0 0 0 0 1 1 0 1 1 1 1 0 1 1 0 1 1 1 1 1 1]
+   [1 1 1 1 1 0 1 1 0 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 0 1 1 0 1 1 1 1 1 1];;
+   [1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 1 1]
+   [1 0 1 1 1 0 1 1 0 1 1 0 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 1 1 0 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1]
+   [1 0 1 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1 0 1 0 1 1 0 1 1 1 0 1 1 1 1 1 0 1 1 1 0 1 1]
+   [1 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 0 1 1]
    [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]])
+
 
 ;Funciones para cargar las imagenes
 
@@ -303,42 +332,44 @@
         grid-height (count map-grid)           ; Total number of rows
         move-step 20                           ; Assume a move step of 20 units
         directions [:right :down :left :up]    ; Possible directions
-        current-dir-index (rand-int (count directions))] ; Current direction index
+        opposite-direction {:right :left, :left :right, :up :down, :down :up} ; Map of opposite directions
+        current-dir @direction]                ; Current direction
 
     (loop [attempts 0]
-      (let [next-x (case @direction
+      (let [next-x (case current-dir
                      :left (- @ghost-x move-step)
                      :right (+ @ghost-x move-step)
                      :up @ghost-x
                      :down @ghost-x)
-            next-y (case @direction
+            next-y (case current-dir
                      :up (- @ghost-y move-step)
                      :down (+ @ghost-y move-step)
                      :left @ghost-y
                      :right @ghost-y)
-            grid-x (int (/ next-x move-step))  ; Adjust this according to your grid setup
-            grid-y (int (/ next-y move-step))]  ; Adjust this according to your grid setup
+            grid-x (int (/ next-x move-step))
+            grid-y (int (/ next-y move-step))
+            valid-directions (remove #(= % (opposite-direction current-dir)) directions)] ; Remove opposite direction
 
         (if (valid-position? grid-x grid-y grid-width grid-height map-grid)
           (do
             (reset! ghost-x next-x)
             (reset! ghost-y next-y))
           (when (< attempts 4)
-                      ;; Cambia la dirección del movimiento a una aleatoria
-                (reset! direction (nth directions current-dir-index))
-                (recur (inc attempts))))))))
+            (let [new-dir-index (rand-int (count valid-directions))
+                  new-direction (nth valid-directions new-dir-index)]
+              (reset! direction new-direction) ; Set new direction avoiding the opposite
+              (recur (inc attempts)))))))))
 
 
 
 
-
+(def map-image (javax.imageio.ImageIO/read (java.io.File. "resources/imgs/map.png")))
 (defn draw-map [g]
   (doseq [y (range (count map-grid))
           x (range (count (first map-grid)))]
     (let [cell (get (get map-grid y) x)]
       (when (= cell 1)
-        (.setColor g Color/GRAY)
-        (.fillRect g (* x pacman-size) (* y pacman-size) pacman-size pacman-size)))))
+        (.drawImage g map-image (* x pacman-size) (* y pacman-size) pacman-size pacman-size nil)))))
 
 
 (defn create-pacman-panel []
@@ -440,14 +471,26 @@
 
 (schedule-ghost-bombs)
 
+(defn create-image-label [image-path width height]
+  (let [original-icon (ImageIcon. image-path)  ; Cargar la imagen original
+        original-image (.getImage original-icon)  ; Obtener la imagen de ImageIcon
+        resized-image (.getScaledInstance original-image width height Image/SCALE_SMOOTH)  ; Redimensionar la imagen
+        resized-icon (ImageIcon. resized-image)  ; Crear un nuevo ImageIcon con la imagen redimensionada
+        label (JLabel. resized-icon)]  ; Crear un JLabel con el ImageIcon redimensionado
+    label))
+
 
 
 (defn create-window []
   (let [frame (JFrame. "Pacman")
         panel (create-pacman-panel)
         vida-label (JLabel. (str "Vidas Pacman1: " @vida-pacman1))  ; Label de vida inicial de Pacman1
-        vida-label2 (JLabel. (str "Vidas Pacman2: " @vida-pacman2))  ; Label de vida inicial de Pacman2
-
+        vida-label2 (JLabel. (str "Vidas Pacman2: " @vida-pacman2))
+        score-label (JLabel. (str "SCORE"))
+        score-label1 (JLabel. (str "Score Pacman1: " @score-pacman1))
+        score-label2 (JLabel. (str "Score Pacman2: " @score-pacman2))  
+        image-logo1 (create-image-label "resources/imgs/logo-pacman.png" 200 100)
+        image-logo2 (create-image-label "resources/imgs/logo-bomberman.png" 190 60)
         timer (Timer. 100 (reify ActionListener
                             (actionPerformed [_ _]
                               (move-ghost-auto ghost2-x ghost2-y direction4 800 800 map-grid)
@@ -457,8 +500,11 @@
                               (swap! angle #(if (= % closed-mouth) open-mouth closed-mouth))
                               (.repaint panel)
                               (.setText vida-label (str "Vidas Pacman1: " @vida-pacman1))  ; Actualiza texto del label de Pacman1
-                              (.setText vida-label2 (str "Vidas Pacman2: " @vida-pacman2))  ; Actualiza texto del label de Pacman2
+                              (.setText vida-label2 (str "Vidas Pacman2: " @vida-pacman2))
+                              (.setText score-label1 (str "Score Pacman1: " @score-pacman1))
+                              (.setText score-label2 (str "Score Pacman2: " @score-pacman2))  ; Actualiza texto del label de Pacman2
                               )))]
+    (.setLayout panel nil)
     (doto frame
       (.setSize 800 800)
       (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
@@ -469,17 +515,37 @@
     (.addKeyListener panel panel)
     (.requestFocus panel)
 
+    (.setBounds score-label 367 125 150 20)  ; Posición y tamaño del label
+    (.setFont score-label (Font. "Arial" Font/PLAIN 12))
+    (.setForeground score-label Color/WHITE)
+    (.add panel score-label)
+
+    (.setBounds score-label1 339 140 150 20)  ; Posición y tamaño del label
+    (.setFont score-label1 (Font. "Arial" Font/PLAIN 12))
+    (.setForeground score-label1 Color/WHITE)
+    (.add panel score-label1)
+
+    (.setBounds score-label2 339 155 150 20)  ; Posición y tamaño del label
+    (.setFont score-label2 (Font. "Arial" Font/PLAIN 12))
+    (.setForeground score-label2 Color/WHITE)
+    (.add panel score-label2)
+
     ;; Configurar el label de vida de Pacman1
-    (.setBounds vida-label 320 10 150 20)  ; Posición y tamaño del label
+    (.setBounds vida-label 340 580 150 20)  ; Posición y tamaño del label
     (.setFont vida-label (Font. "Arial" Font/PLAIN 12))
     (.setForeground vida-label Color/GREEN)
     (.add panel vida-label)
 
     ;; Configurar el label de vida de Pacman2
-    (.setBounds vida-label2 420 10 150 20)  ; Posición y tamaño del label
+    (.setBounds vida-label2 340 600 150 20)  ; Posición y tamaño del label
     (.setFont vida-label2 (Font. "Arial" Font/PLAIN 12))
-    (.setForeground vida-label2 Color/YELLOW)
-    (.add panel vida-label2)
+    (.setForeground vida-label2 Color/RED)
+    (.add panel vida-label2)  
+
+    (.setBounds image-logo1 150 170 200 100)  ; Ajusta la posición y tamaño según necesites
+    (.add panel image-logo1)
+    (.setBounds image-logo2 440 185 190 60)  ; Ajusta la posición y tamaño según necesites
+    (.add panel image-logo2)
 
     (.start timer)  ; Iniciar el timer para la lógica del juego
 
@@ -509,7 +575,10 @@
       (println (str "Image for key " key " is loaded successfully."))
       (println (str "Image for key " key " is not loaded.")))))
 
+
+
 (defn -main [& args]
   (println "Current working directory:" (System/getProperty "user.dir"))
   (load-images)
-  (create-window))
+  (create-window)
+  )
